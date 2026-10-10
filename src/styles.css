@@ -1,0 +1,1684 @@
+/* ------------------------------------------------------------------
+   Palette (from color.adobe.com): plum #2E1069, indigo #272F8B,
+   lavender #9B75DB, gold #F2B90C, red #C20300.
+   Derived: --night is a darker plum for page background; --ink is a
+   near-white lavender tint for text.
+   Contrast notes: gold, lavender and ink all pass AA on --night.
+   Red does NOT pass as text on purple, so it is only ever used as a
+   filled badge with white text.
+------------------------------------------------------------------- */
+:root {
+  --plum: #2e1069;
+  --indigo: #272f8b;
+  --lavender: #9b75db;
+  --gold: #f2b90c;
+  --red: #c20300;
+  --night: #1b0948;
+  --ink: #f6f1ff;
+  --ink-dim: #cdbdf2;
+  --line: rgba(155, 117, 219, 0.3);
+  --card: rgba(39, 47, 139, 0.32);
+  --radius: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  min-height: 100%;
+}
+body {
+  margin: 0;
+  background: var(--night);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Top bar ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 20px;
+  background: var(--plum);
+  border-bottom: 1px solid var(--line);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: auto;
+}
+.logo {
+  width: 36px;
+  height: 36px;
+  flex: none;
+}
+.brand h1 {
+  font-size: 1.25rem;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+}
+.tagline {
+  font-size: 0.82rem;
+  color: var(--ink-dim);
+}
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: rgba(27, 9, 72, 0.6);
+  padding: 4px;
+  border-radius: 999px;
+}
+.tab {
+  border: 0;
+  background: transparent;
+  padding: 6px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--ink-dim);
+}
+.tab.on {
+  background: var(--gold);
+  color: var(--night);
+  font-weight: 650;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.sample-badge {
+  font-size: 0.75rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--lavender);
+  color: var(--ink-dim);
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 9px 14px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.12s ease, background 0.15s ease;
+}
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--gold);
+  color: var(--night);
+}
+.btn-primary:hover:not(:disabled) {
+  background: #ffd042;
+}
+.btn-ghost {
+  background: transparent;
+  border-color: var(--lavender);
+  color: var(--ink);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: rgba(155, 117, 219, 0.2);
+}
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.88rem;
+}
+
+/* ---------- Stage ---------- */
+.stage {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 410px;
+  min-height: 0;
+}
+.sky-wrap {
+  position: relative;
+  min-width: 0;
+  background: var(--night);
+}
+.sky-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.sky {
+  display: block;
+  width: 100%;
+  height: calc(100vh - 118px);
+  min-height: 460px;
+}
+.map-note {
+  position: absolute;
+  left: 16px;
+  bottom: 10px;
+  font-size: 0.78rem;
+  color: var(--ink-dim);
+  background: rgba(27, 9, 72, 0.7);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+/* SVG pieces */
+.sky-label {
+  fill: var(--ink);
+  pointer-events: none;
+  /* dark outline keeps text readable where a match line crosses it */
+  paint-order: stroke;
+  stroke: var(--night);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.sky-label-area {
+  font-size: 15px;
+  font-weight: 650;
+}
+.sky-label-sub {
+  font-size: 13px;
+  fill: var(--ink-dim);
+}
+.sky-label-farm {
+  font-size: 12.5px;
+  fill: var(--gold);
+}
+.planet {
+  cursor: pointer;
+}
+.planet:hover circle:not([stroke-dasharray]) {
+  filter: brightness(1.12);
+}
+.farm {
+  cursor: pointer;
+}
+.farm-hit {
+  fill: transparent;
+}
+.farm:hover polygon {
+  filter: brightness(1.15);
+}
+.farm,
+.farm:focus,
+.farm:focus-visible,
+.planet,
+.planet:focus,
+.planet:focus-visible {
+  outline: none; /* keyboard focus is shown by the circle (.focus-ring) instead of a box */
+}
+.focus-ring {
+  stroke: none;
+  pointer-events: none;
+}
+.farm:focus-visible .focus-ring,
+.planet:focus-visible .focus-ring {
+  stroke: var(--gold);
+  stroke-width: 3;
+}
+.planet-check {
+  font-size: 20px;
+  font-weight: 800;
+  fill: var(--night);
+  pointer-events: none;
+}
+.twinkle {
+  animation: twinkle 3.2s ease-in-out infinite;
+}
+.flow {
+  animation: dash 1.2s linear infinite;
+}
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+@keyframes dash {
+  to {
+    stroke-dashoffset: -30;
+  }
+}
+
+/* ---------- Side panel ---------- */
+.panel-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.panel {
+  background: var(--plum);
+  border-left: 1px solid var(--line);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  max-height: calc(100vh - 118px);
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.card-done {
+  border-color: var(--gold);
+  background: rgba(242, 185, 12, 0.1);
+}
+.eyebrow {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-dim);
+}
+.muted {
+  color: var(--ink-dim);
+}
+.small {
+  font-size: 0.85rem;
+}
+.note {
+  font-size: 0.8rem;
+  color: var(--ink-dim);
+}
+.req-head h2 {
+  font-size: 1.3rem;
+  line-height: 1.2;
+  margin: 4px 0 10px;
+}
+.chips,
+.cost-row,
+.pledge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.chip {
+  font-size: 0.82rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(27, 9, 72, 0.5);
+}
+.chip-strong {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.badge-urgent {
+  background: var(--red);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+/* status pills */
+.pill {
+  font-size: 0.8rem;
+  font-weight: 650;
+  padding: 3px 11px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.pill-open {
+  border-color: var(--lavender);
+  color: var(--ink);
+}
+.pill-matched {
+  background: var(--indigo);
+  color: var(--gold);
+}
+.pill-funded {
+  background: var(--lavender);
+  color: var(--night);
+}
+.pill-delivered {
+  background: var(--gold);
+  color: var(--night);
+}
+
+/* intro legend */
+.intro h2 {
+  font-size: 1.2rem;
+}
+.legend {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.legend-planet,
+.legend-ring,
+.legend-done {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex: none;
+}
+.legend-planet {
+  background: radial-gradient(circle at 35% 30%, #c9b3f5, var(--lavender) 55%, var(--indigo));
+}
+.legend-ring {
+  border: 3px solid var(--gold);
+  border-right-color: rgba(155, 117, 219, 0.4);
+}
+.legend-done {
+  background: radial-gradient(circle at 35% 30%, #ffe58a, var(--gold) 60%, var(--lavender));
+  box-shadow: 0 0 10px var(--gold);
+}
+.legend-star {
+  width: 18px;
+  text-align: center;
+  color: var(--gold);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* farm cards */
+.farm-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.farm-card.is-top {
+  border-color: var(--gold);
+}
+.farm-card.is-ineligible {
+  opacity: 0.7;
+  background: rgba(27, 9, 72, 0.4);
+}
+.farm-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.farm-card h3,
+.farm-summary h3,
+.delivery h3,
+.card-done h3 {
+  font-size: 1.02rem;
+}
+.best {
+  color: var(--gold);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+.score {
+  text-align: right;
+  flex: none;
+}
+.score-num {
+  font-size: 1.7rem;
+  font-weight: 750;
+  color: var(--gold);
+  line-height: 1;
+}
+.score-of {
+  font-size: 0.8rem;
+  color: var(--ink-dim);
+}
+.reasons {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 0.9rem;
+}
+.reasons li {
+  display: flex;
+  gap: 8px;
+}
+.tick-ok {
+  color: var(--gold);
+  font-weight: 700;
+}
+.tick-no {
+  color: var(--ink-dim);
+  font-weight: 700;
+}
+
+/* stardust meter */
+.stardust {
+  display: grid;
+  gap: 8px;
+}
+.stardust-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.stardust-label {
+  font-weight: 650;
+}
+.stardust-num {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.meter {
+  position: relative;
+  height: 16px;
+  border-radius: 999px;
+  background: rgba(27, 9, 72, 0.7);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.meter-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--lavender), var(--gold));
+  border-radius: 999px;
+  transition: width 0.45s ease;
+}
+.meter-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(246, 241, 255, 0.35);
+}
+.milestones {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  justify-content: space-between;
+  gap: 4px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  color: var(--ink-dim);
+}
+.milestones li.on {
+  color: var(--gold);
+  font-weight: 650;
+}
+
+/* forms */
+.field {
+  display: grid;
+  gap: 4px;
+  font-size: 0.88rem;
+}
+.field span {
+  color: var(--ink-dim);
+}
+.field input,
+.field select,
+.field textarea {
+  background: rgba(27, 9, 72, 0.7);
+  border: 1px solid var(--lavender);
+  border-radius: 8px;
+  padding: 8px 10px;
+  width: 100%;
+}
+.field-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 10px;
+}
+.delivery {
+  display: grid;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+/* modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(14, 4, 40, 0.75);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  z-index: 10;
+}
+.modal {
+  width: min(560px, 100%);
+  background: var(--plum);
+  border: 1px solid var(--lavender);
+  border-radius: 18px;
+  padding: 20px;
+  display: grid;
+  gap: 12px;
+  max-height: 92vh;
+  overflow-y: auto;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* ---------- Impact ---------- */
+.stage-impact {
+  grid-template-columns: minmax(0, 1fr);
+}
+.impact {
+  width: min(980px, 100%);
+  margin: 0 auto;
+  padding: 24px 20px 32px;
+  display: grid;
+  align-content: start; /* without this the grid stretches its rows to fill the page */
+  gap: 16px;
+}
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.tile {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.tile-value {
+  font-size: 1.8rem;
+  font-weight: 750;
+  color: var(--gold);
+  line-height: 1.1;
+}
+.tile-label {
+  margin-top: 4px;
+  font-weight: 600;
+}
+.tile-sub {
+  font-size: 0.8rem;
+  color: var(--ink-dim);
+}
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+th,
+td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+th {
+  color: var(--ink-dim);
+  font-weight: 600;
+  background: rgba(46, 16, 105, 0.6);
+}
+tr:last-child td {
+  border-bottom: 0;
+}
+.link {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--gold);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.foot {
+  padding: 10px 20px;
+  font-size: 0.78rem;
+  color: var(--ink-dim);
+  border-top: 1px solid var(--line);
+  background: var(--plum);
+}
+
+/* ---------- Small screens ---------- */
+@media (max-width: 900px) {
+  .is-map .sky {
+    height: auto;
+  }
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sky {
+    /* wider than a phone so labels stay readable; swipe sideways to pan */
+    min-width: 820px;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 1000 / 720;
+  }
+  .panel {
+    max-height: none;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+  .tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+  .topbar {
+    padding: 10px 14px;
+  }
+}
+
+/* ---------- Map view (the "paper map" picture) ---------- */
+.view-controls {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(27, 9, 72, 0.88);
+  border: 1px solid var(--line);
+}
+.seg {
+  min-height: 40px;
+  padding: 6px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font-weight: 600;
+  cursor: pointer;
+}
+.seg:hover:not(.on) {
+  background: rgba(155, 117, 219, 0.25);
+}
+.seg.on {
+  background: var(--gold);
+  color: var(--night);
+}
+.seg-text {
+  margin-left: 6px;
+  border: 1px solid var(--lavender);
+}
+.sky-wrap.is-map {
+  background: #f3eefa;
+}
+.is-map .sky {
+  height: calc(100vh - 118px - 82px);
+}
+/* Key under the map, in normal flow so it never covers a town */
+.map-legend {
+  margin: 0;
+  padding: 10px 16px;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  background: #fff;
+  color: var(--plum);
+  border-top: 2px solid var(--plum);
+  font-size: 1rem;
+  font-weight: 650;
+}
+.is-map .map-note {
+  position: static;
+  display: block;
+  border-radius: 0;
+  padding: 6px 16px 8px;
+  background: #fff;
+  color: #3b2486;
+  font-size: 0.85rem;
+}
+.map-legend li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.map-legend svg {
+  width: 28px;
+  height: 28px;
+  flex: none;
+}
+/* In map view the labels switch to dark text on a white halo and grow with the "Larger text" button. */
+.map-mode .sky-label {
+  fill: var(--plum);
+  stroke: #fff;
+  stroke-width: 5px;
+}
+.map-mode .sky-label-area {
+  font-size: calc(19px * var(--ms, 1));
+  font-weight: 750;
+}
+.map-mode .sky-label-sub {
+  font-size: calc(16px * var(--ms, 1));
+  font-weight: 600;
+  fill: #3b2486;
+}
+.map-mode .sky-label-farm {
+  font-size: calc(16px * var(--ms, 1));
+  font-weight: 750;
+  fill: var(--plum);
+}
+.map-city,
+.map-shield,
+.map-scale {
+  font-family: inherit;
+  fill: var(--plum);
+  paint-order: stroke;
+  stroke: #fff;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.map-city {
+  font-size: calc(18px * var(--ms, 1));
+  font-weight: 650;
+}
+.map-city-big {
+  font-size: calc(26px * var(--ms, 1));
+  font-weight: 800;
+}
+.map-shield {
+  font-size: calc(14px * var(--ms, 1));
+  font-weight: 800;
+  fill: #fff;
+  stroke: none;
+}
+.map-scale {
+  font-size: 15px;
+  font-weight: 700;
+  stroke: none;
+}
+.map-mode .spark {
+  fill: #272f8b;
+}
+.map-mode .comet {
+  fill: var(--gold);
+  stroke: var(--plum);
+  stroke-width: 1.5;
+}
+.map-mode .shock {
+  stroke: #272f8b;
+}
+.map-mode .fx-amount {
+  fill: var(--plum);
+}
+.map-mode .ping {
+  stroke: var(--plum);
+}
+.map-mode .planet-check {
+  fill: var(--plum);
+}
+.map-mode .halo {
+  fill: var(--gold);
+}
+
+/* ---------- Farm details (side panel when a star is clicked) ---------- */
+.farm-panel-top {
+  display: flex;
+}
+.req-head h2:focus {
+  outline: none;
+}
+.stock-list,
+.farm-reqs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.stock-list li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  align-items: baseline;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.stock-list li:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.stock-name {
+  font-weight: 600;
+}
+.stock-lbs {
+  color: var(--gold);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.fit-card {
+  border-color: var(--gold);
+}
+.fit-card.is-ineligible {
+  border-color: var(--line);
+  background: rgba(27, 9, 72, 0.4);
+}
+.farm-reqs li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ---------- Questions tab ---------- */
+.q-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.q-head h2 {
+  margin-bottom: 6px;
+}
+.q-head .muted {
+  max-width: 62ch;
+}
+.q-tools {
+  display: flex;
+  gap: 8px;
+}
+.q-list {
+  display: grid;
+  gap: 22px;
+}
+.q-section {
+  display: grid;
+  gap: 8px;
+}
+.q-section-title {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+}
+.q-item {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.q-item[open] {
+  border-color: var(--lavender);
+}
+.q-item summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 12px 16px;
+  font-size: 1.05rem;
+  font-weight: 650;
+}
+.q-item summary::-webkit-details-marker {
+  display: none;
+}
+.q-item summary:hover {
+  background: rgba(155, 117, 219, 0.15);
+  border-radius: var(--radius);
+}
+.q-chev {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-right: 2.5px solid var(--gold);
+  border-bottom: 2.5px solid var(--gold);
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+.q-item[open] .q-chev {
+  transform: rotate(225deg);
+}
+.q-body {
+  padding: 0 16px 14px;
+  animation: rise 0.25s ease-out both;
+}
+.q-lead {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.q-body ul {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 6px;
+  line-height: 1.5;
+}
+
+/* ---------- Guided tour ---------- */
+.tour {
+  position: fixed;
+  z-index: 30;
+  bottom: 56px;
+  left: calc((100vw - 410px) / 2);
+  transform: translateX(-50%);
+  width: min(500px, calc(100vw - 410px - 32px));
+  padding: 16px 18px 14px;
+  display: grid;
+  gap: 10px;
+  background: var(--plum);
+  color: var(--ink);
+  border: 2px solid var(--gold);
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(10, 2, 30, 0.6);
+}
+.tour-wide {
+  left: 50%;
+  width: min(540px, calc(100vw - 32px));
+}
+.tour h2 {
+  font-size: 1.3rem;
+  line-height: 1.2;
+}
+.tour p {
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+.tour-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.tour-count {
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.tour-x {
+  width: 40px;
+  height: 40px;
+  margin: -8px -8px -8px 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+.tour-x:hover {
+  background: rgba(155, 117, 219, 0.3);
+}
+.tour-dots {
+  display: flex;
+  gap: 6px;
+}
+.tour-dots span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(155, 117, 219, 0.4);
+}
+.tour-dots span.done {
+  background: var(--lavender);
+}
+.tour-dots span.on {
+  width: 24px;
+  border-radius: 999px;
+  background: var(--gold);
+}
+.tour-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tour-actions .btn {
+  min-height: 44px;
+  padding-inline: 18px;
+}
+.tour-actions .btn-primary {
+  flex: 1 1 auto;
+}
+/* The gold ring that points at what the step is talking about. It never blocks clicks. */
+.tour-spot {
+  position: fixed;
+  z-index: 25;
+  pointer-events: none;
+  border: 3px solid var(--gold);
+  border-radius: 12px;
+  box-shadow: 0 0 0 3px rgba(27, 9, 72, 0.55), 0 0 18px 4px rgba(242, 185, 12, 0.55);
+  animation: spot-pulse 1.6s ease-in-out infinite;
+}
+.tour-spot-round {
+  border-radius: 50%;
+}
+@keyframes spot-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px rgba(27, 9, 72, 0.55), 0 0 12px 2px rgba(242, 185, 12, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(27, 9, 72, 0.55), 0 0 24px 8px rgba(242, 185, 12, 0.75);
+  }
+}
+@media (max-width: 900px) {
+  .tour,
+  .tour-wide {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transform: none;
+    width: auto;
+    border-width: 2px 0 0;
+    border-radius: 18px 18px 0 0;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    max-height: 62vh;
+    overflow-y: auto;
+  }
+  .app.has-tour {
+    padding-bottom: 320px; /* so the card never hides the end of the page */
+  }
+  /* When the tour scrolls to something, leave room above the card and below the top bar */
+  .has-tour [data-tour] {
+    scroll-margin-bottom: 350px;
+    scroll-margin-top: 20px;
+  }
+}
+
+/* ---------- Welcome popup (opens on load; reopened by the About button) ---------- */
+.welcome-backdrop {
+  z-index: 40;
+}
+.modal.welcome {
+  display: block;
+  position: relative;
+  width: min(700px, 100%);
+  padding: 0;
+  max-height: 94vh;
+  border-color: rgba(242, 185, 12, 0.55);
+}
+.welcome-x {
+  position: sticky;
+  top: 10px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin: 10px 10px 0 auto;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(14, 4, 40, 0.85);
+  color: var(--ink);
+  font-size: 1rem;
+  cursor: pointer;
+}
+.welcome-x:hover {
+  border-color: var(--gold);
+}
+.welcome-x:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+.welcome-hero {
+  margin-top: -44px;
+  padding: 30px 56px 18px 28px;
+  border-radius: 18px 18px 0 0;
+  background:
+    radial-gradient(circle at 92% 0%, rgba(242, 185, 12, 0.24), transparent 55%),
+    radial-gradient(circle at 0% 100%, rgba(155, 117, 219, 0.28), transparent 60%);
+}
+.welcome-eyebrow {
+  display: block;
+  font-size: 0.75rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 650;
+}
+.welcome-hero h2 {
+  margin: 8px 0 10px;
+  font-size: clamp(1.6rem, 4.4vw, 2.2rem);
+  line-height: 1.12;
+}
+.welcome-sub {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+.welcome-steps {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0 28px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.welcome-steps li {
+  display: grid;
+  gap: 3px;
+  align-content: start;
+  padding: 10px 11px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: var(--ink-dim);
+}
+.welcome-steps strong {
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+.welcome-step-n {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-bottom: 2px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--night);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.welcome-why {
+  margin: 0 28px 18px;
+  padding: 14px 16px;
+  border: 1px solid rgba(242, 185, 12, 0.45);
+  border-radius: 12px;
+  background: rgba(242, 185, 12, 0.1);
+}
+.welcome-why h3 {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+  color: var(--gold);
+}
+.welcome-why p {
+  margin: 0;
+  line-height: 1.5;
+}
+.welcome-diff-title,
+.welcome-h {
+  margin: 0 28px 8px;
+  font-size: 1.05rem;
+  color: var(--gold);
+}
+.welcome-diff-title {
+  margin-top: 18px;
+}
+.welcome-diffs {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0 28px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.welcome-diffs li {
+  display: grid;
+  gap: 3px;
+  align-content: start;
+  padding: 10px 12px;
+  border-left: 3px solid var(--gold);
+  border-radius: 0 10px 10px 0;
+  background: var(--card);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--ink-dim);
+}
+.welcome-diffs strong {
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+.welcome-more-toggle {
+  display: block;
+  margin: 0 auto 16px;
+  padding: 7px 20px;
+  border: 1px solid var(--lavender);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.welcome-more-toggle:hover {
+  border-color: var(--gold);
+}
+.welcome-more-toggle:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+.welcome-more {
+  scroll-margin-top: 56px; /* clears the pinned close button */
+}
+.welcome-facts {
+  list-style: none;
+  margin: 0;
+  padding: 0 28px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.welcome-facts li {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+.welcome-facts strong {
+  font-size: 1.45rem;
+  line-height: 1.1;
+  color: var(--gold);
+}
+.welcome-facts em {
+  font-style: normal;
+  font-size: 0.72rem;
+  color: var(--ink-dim);
+}
+.welcome-close {
+  margin: 12px 28px 16px;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+.welcome-note {
+  margin: 0 28px 16px;
+  padding: 8px 12px;
+  border: 1px dashed var(--lavender);
+  border-radius: 10px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--ink-dim);
+}
+.welcome-actions {
+  /* pinned to the bottom of the popup so the buttons are always in reach */
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 14px 28px calc(16px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 18px 18px;
+  background: var(--plum);
+}
+.welcome-actions .btn {
+  flex: 1 1 200px;
+}
+@media (max-width: 640px) {
+  .welcome-hero {
+    padding: 28px 52px 14px 18px;
+  }
+  .welcome-steps,
+  .welcome-diffs,
+  .welcome-actions {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+  .welcome-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .welcome-diffs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .welcome-facts {
+    grid-template-columns: minmax(0, 1fr);
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+  .welcome-why,
+  .welcome-note,
+  .welcome-close {
+    margin-left: 18px;
+    margin-right: 18px;
+  }
+  .welcome-diff-title,
+  .welcome-h {
+    margin-left: 18px;
+    margin-right: 18px;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Motion. Everything below is switched off by the reduced-motion
+   block at the very end. No element is hidden by default CSS, so with
+   motion off the page simply shows its final state.
+------------------------------------------------------------------- */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes pop {
+  0% {
+    transform: scale(0.5);
+  }
+  60% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  80%,
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.12;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 0.32;
+    transform: scale(1.08);
+  }
+}
+@keyframes spark {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) scale(0.2);
+    opacity: 0;
+  }
+}
+@keyframes floatup {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+}
+@keyframes shock {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+@keyframes comet {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: var(--o);
+  }
+  88% {
+    opacity: var(--o);
+  }
+  100% {
+    transform: translate(var(--tx), var(--ty));
+    opacity: 0;
+  }
+}
+@keyframes shoot {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  2% {
+    opacity: 1;
+  }
+  8% {
+    transform: translate(330px, 132px);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(330px, 132px);
+    opacity: 0;
+  }
+}
+
+/* Sky on first show: planets and stars fade in one after another, rings fill */
+.planet,
+.farm {
+  animation: fade-in 0.7s ease-out both;
+}
+.ring-fill {
+  transition: stroke-dasharray 0.9s cubic-bezier(0.4, 0, 0.2, 1), stroke-opacity 0.3s ease;
+}
+.line-in {
+  animation: fade-in 0.6s ease-out both;
+}
+.sel-ring,
+.ping,
+.halo,
+.farm-matched polygon {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.sel-ring {
+  animation: spin 40s linear infinite;
+}
+.ping {
+  stroke: var(--ink);
+  stroke-width: 2;
+  pointer-events: none;
+  animation: ping 2.6s ease-out infinite;
+}
+.halo {
+  pointer-events: none;
+  animation: breathe 3.6s ease-in-out infinite;
+}
+.farm-matched polygon {
+  animation: pop 0.6s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+
+/* Shooting stars (decorative) */
+.shoot {
+  opacity: 0;
+  animation: shoot 11s linear infinite;
+}
+.shoot-2 {
+  animation-duration: 15s;
+  animation-delay: 6s;
+}
+
+/* One-off effects: pledge burst, funded shockwave, comet on match and delivery */
+.fx {
+  pointer-events: none;
+}
+.spark,
+.comet,
+.shock {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.spark {
+  fill: var(--gold);
+  animation: spark 0.95s ease-out both;
+}
+.spark-late {
+  animation-duration: 1.2s;
+  animation-delay: 0.85s;
+}
+.comet {
+  fill: var(--gold);
+  animation: comet 0.95s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.shock {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 3;
+  animation: shock 1s ease-out both;
+}
+.shock-late {
+  animation-delay: 0.85s;
+}
+.fx-amount {
+  font-size: 17px;
+  font-weight: 800;
+  fill: var(--gold);
+  animation: floatup 1.3s ease-out both;
+}
+
+/* Side panel: cards rise in when a different pantry or step is shown */
+.panel-stack > * {
+  animation: rise 0.38s ease-out both;
+}
+.panel-stack > :nth-child(2) {
+  animation-delay: 0.06s;
+}
+.panel-stack > :nth-child(3) {
+  animation-delay: 0.12s;
+}
+.panel-stack > :nth-child(n + 4) {
+  animation-delay: 0.18s;
+}
+.farm-list > li {
+  animation: rise 0.4s ease-out both;
+}
+.farm-list > li:nth-child(1) {
+  animation-delay: 0.08s;
+}
+.farm-list > li:nth-child(2) {
+  animation-delay: 0.14s;
+}
+.farm-list > li:nth-child(3) {
+  animation-delay: 0.2s;
+}
+.farm-list > li:nth-child(4) {
+  animation-delay: 0.26s;
+}
+.farm-list > li:nth-child(n + 5) {
+  animation-delay: 0.32s;
+}
+.milestones li.on span {
+  display: inline-block;
+  animation: pop 0.55s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+.score-num,
+.stardust-num,
+.tile-value {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Impact view */
+.impact > * {
+  animation: rise 0.45s ease-out both;
+}
+.tile {
+  animation: rise 0.5s ease-out both;
+}
+.tile:nth-child(2) {
+  animation-delay: 0.07s;
+}
+.tile:nth-child(3) {
+  animation-delay: 0.14s;
+}
+.tile:nth-child(4) {
+  animation-delay: 0.21s;
+}
+
+/* Modal */
+.modal-backdrop {
+  animation: fade-in 0.2s ease-out both;
+}
+.modal {
+  animation: rise 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+}
+
+/* Respect the system "reduce motion" setting: no animations or transitions at all */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .shoot {
+    display: none;
+  }
+}
