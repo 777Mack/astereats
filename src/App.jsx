@@ -10,6 +10,8 @@ import Tour from './components/Tour.jsx';
 import FarmPanel from './components/FarmPanel.jsx';
 import QuestionsView from './components/QuestionsView.jsx';
 import IntroModal from './components/IntroModal.jsx';
+import MoneyView from './components/MoneyView.jsx';
+import JoinView from './components/JoinView.jsx';
 import { TOUR_STEPS } from './lib/tourSteps.js';
 
 const { pantries, farms } = sample;
@@ -202,8 +204,14 @@ export default function App() {
           <button className={view === 'impact' ? 'tab on' : 'tab'} aria-pressed={view === 'impact'} onClick={() => setView('impact')}>
             Impact
           </button>
+          <button className={view === 'money' ? 'tab on' : 'tab'} aria-pressed={view === 'money'} onClick={() => setView('money')}>
+            Money
+          </button>
           <button className={view === 'questions' ? 'tab on' : 'tab'} aria-pressed={view === 'questions'} onClick={() => setView('questions')}>
             Questions
+          </button>
+          <button className={view === 'join' ? 'tab on' : 'tab'} aria-pressed={view === 'join'} onClick={() => setView('join')}>
+            Join
           </button>
         </nav>
         <div className="top-actions">
@@ -332,6 +340,14 @@ export default function App() {
       ) : view === 'impact' ? (
         <main className="stage stage-impact">
           <ImpactView requests={requests} pantries={pantries} farms={farms} onOpen={openFromImpact} />
+        </main>
+      ) : view === 'money' ? (
+        <main className="stage stage-impact">
+          <MoneyView onJoin={() => setView('join')} />
+        </main>
+      ) : view === 'join' ? (
+        <main className="stage stage-impact">
+          <JoinView />
         </main>
       ) : (
         <main className="stage stage-impact">

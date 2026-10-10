@@ -1682,3 +1682,36 @@ tr:last-child td {
     display: none;
   }
 }
+
+/* ---------- Join tab ---------- */
+.join-lead {
+  max-width: 62ch;
+  margin-top: 6px;
+}
+.join-form,
+.join-done {
+  display: grid;
+  gap: 12px;
+  max-width: 560px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+.join-role {
+  display: flex;
+  gap: 18px;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.join-role legend {
+  color: var(--ink-dim);
+  font-size: 0.88rem;
+  margin-bottom: 6px;
+}
+.join-role label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}

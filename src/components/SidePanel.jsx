@@ -168,7 +168,10 @@ function FundingCard({ request, onPledge }) {
           {options.length ? `Cover the rest (${money(remaining)})` : `Pledge ${money(remaining)} to finish`}
         </button>
       </div>
-      <p className="note">Simulated pledges for the demo. No real payment is taken.</p>
+      <p className="note">
+        Simulated pledges for the demo. No real payment is taken. In a real version, pledges are held until the goal is
+        reached and refunded if delivery is not confirmed (see the Money tab).
+      </p>
     </div>
   );
 }

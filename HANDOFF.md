@@ -43,6 +43,8 @@ Farm details: clicking or tapping a star opens a farm card (what it has, price o
 
 Questions tab: short, honest answers to judge questions (sustainability, who pays, why donate here, money and tax, verification, fraud, who delivers, food safety, farms, existing programs, accessibility, limits). Text lives in `src/components/QuestionsView.jsx`. These are plans, not facts, and the page says so. Update it if the team's answers change (for example once a real Gemini reader exists).
 
+Money tab: how pledges would be held, the refund-if-unconfirmed rule, and draft farm price-lock terms with a fuel-cost exception. Text lives in `src/components/MoneyView.jsx`; the numbers in it (25% fuel trigger, 14-day window) are placeholders. Join tab: demo-only form for pantries and farms (`JoinView.jsx`); nothing is sent or saved.
+
 Welcome popup: opens on load (`src/components/IntroModal.jsx`, styles prefixed `welcome-` in `styles.css`). First screen: headline, short pitch, four "why it's different" squares, sample-data note. **Read more** reveals the "Less to manage" box, the four steps, and three sourced facts (USDA: nearly 48 million people, 14 million children food insecure in 2024; Feeding America: 1 in 6 in Georgia; USDA: 30 to 40 percent of the food supply wasted). The **About** button reopens it. Copy is constants at the top of the file. Do not rename its classes to `intro`: `.intro` already styles the side panel's "Read the sky" card.
 
 Guided tour: **Take the tour** in the top bar runs an 11-step walkthrough (need, ranked farms, match, funding, delivery, impact, map). Steps are in `src/lib/tourSteps.js`; the card and gold pointer ring are `src/components/Tour.jsx`. Text numbers are computed from the matching code. Elements it points at carry `data-tour="..."` attributes, so keep those if you restructure components.
@@ -75,6 +77,8 @@ src/
     Tour.jsx               the guided tour card and pointer ring
     FarmPanel.jsx          farm details card (when a star is clicked)
     QuestionsView.jsx      the Questions tab (hard questions, answered)
+    MoneyView.jsx          the Money tab (where pledges go, farm price terms)
+    JoinView.jsx           the Join tab (demo registration form)
     IntroModal.jsx         the welcome popup shown on load (and from About)
   lib/ match.js geo.js parseRequest.js categories.js motion.js tourSteps.js
   data/sample.json         all sample data
