@@ -1,201 +1,195 @@
-import { useRef } from 'react';
+import { useState } from 'react';
 
 // "Questions" tab: short, honest answers to what judges, pantries and donors usually ask.
+// Each card shows a one-line answer; "More" opens a few supporting points.
 // These are plans and reasoning, not tested facts. Edit the text here to match what the team will say out loud.
-const SECTIONS = [
+const TOPICS = [
+  { id: 'money', label: 'Money' },
+  { id: 'donors', label: 'Donors' },
+  { id: 'trust', label: 'Trust' },
+  { id: 'partners', label: 'Partners' },
+  { id: 'limits', label: 'Limits' },
+];
+
+const QUESTIONS = [
   {
-    title: 'Money and staying afloat',
-    items: [
-      {
-        q: 'How does this keep running if usage goes down?',
-        lead: 'It is built to be cheap when it is quiet, and its income does not depend only on donation volume.',
-        points: [
-          'Low fixed costs: no warehouse, trucks or inventory. Farms deliver directly and the platform is software, so a slow month costs little.',
-          'More than one income source: a paid plan for food banks and pantry networks that coordinate many pantries, local sponsors who cover delivery costs or match donations, and food-access grants.',
-          'Donations go to the request, not to us. Any support for the platform would be an optional, clearly labeled tip.',
-          'It stays useful without donors: a pantry can buy from a nearby farm with its own budget, and farms that donate surplus only need the delivery covered.',
-        ],
-      },
-      {
-        q: 'Who would pay for it, and why?',
-        lead: 'Pantries never pay to post a need. The people who benefit from coordination would.',
-        points: [
-          'Food banks and pantry networks: matching, delivery tracking and confirmed-pound reports in one place could save coordinators time and make grant reporting easier.',
-          'Local sponsors: a business gets a specific result to point to ("we covered delivery of 150 lbs of vegetables to Decatur") instead of a logo on a banner.',
-          'Honest note: we have not tested pricing with anyone yet. A pilot with one pantry network would tell us what they would pay for.',
-        ],
-      },
+    topic: 'money',
+    q: 'How does this keep running if usage drops?',
+    a: 'It costs little when quiet, and income doesn’t depend only on donations.',
+    more: [
+      'No warehouse, trucks or inventory. Farms deliver and the platform is software.',
+      'Income from food bank plans, local sponsors and food-access grants.',
+      'Pantries can still buy from farms with their own budget, no donors needed.',
     ],
   },
   {
-    title: 'Donors',
-    items: [
-      {
-        q: 'Why donate here instead of a food bank, GoFundMe or another charity app?',
-        lead: 'If you already give to your local food bank, that is great. We are not trying to replace it.',
-        points: [
-          'Specific: you fund one visible need ("150 lbs of root vegetables for Decatur within 48 hours") with a goal small enough to actually finish.',
-          'Verified: a request only counts as delivered once the pantry confirms the pounds it received.',
-          'Local: the money pays a nearby farm for food grown nearby.',
-          'Built for this job: crowdfunding sites are made for one-off campaigns, not small, frequent, time-sensitive food orders that need a farm matched and a delivery confirmed.',
-          'No pressure: milestones celebrate the community. There is no donor leaderboard.',
-        ],
-      },
-      {
-        q: 'Where does the money go? Is it tax-deductible?',
-        lead: 'In a real version, money would go through a registered nonprofit, never through us.',
-        points: [
-          'The pantry is the buyer. A nonprofit partner (the food bank or a fiscal sponsor) would collect donations and pay the farm and the driver on the pantry’s behalf.',
-          'That set-up is what could make gifts deductible. Donations straight to a for-profit farm generally are not.',
-          'None of this is set up yet. Every pledge in this demo is simulated and no money moves.',
-        ],
-      },
+    topic: 'money',
+    q: 'Who would pay for it?',
+    a: 'Never pantries. The networks and sponsors who gain from coordination would.',
+    more: [
+      'Food banks: matching, tracking and confirmed-pound reports in one place.',
+      'Sponsors: a specific result to point to, not a logo on a banner.',
+    ],
+    note: 'We haven’t tested pricing with anyone yet.',
+  },
+  {
+    topic: 'donors',
+    q: 'Why donate here instead of a food bank or GoFundMe?',
+    a: 'You fund one specific, local need, and it only counts once the pantry confirms it.',
+    more: [
+      'Small goals that actually finish, like “150 lbs of roots for Decatur”.',
+      'Built for frequent, time-sensitive food orders, not one-off campaigns.',
+      'No donor leaderboard. Milestones celebrate the community.',
     ],
   },
   {
-    title: 'Trust',
-    items: [
-      {
-        q: 'How do you know the food actually arrived?',
-        lead: 'Only the pantry can mark a request delivered, and it enters the pounds it actually received.',
-        points: [
-          'The Impact page counts only those confirmed pounds. Pledges alone never count as impact.',
-          'Next: the farm confirms the drop-off too, with an optional photo, and any mismatch between the two flags the request for review.',
-          'This relies on vetted pantries telling the truth, and we say so openly.',
-        ],
-      },
-      {
-        q: 'What stops fake requests or fraud?',
-        lead: 'Money never goes to an individual, and only vetted organizations take part.',
-        points: [
-          'Pantries and farms would be checked before they can post or be matched.',
-          'Funds would sit with the nonprofit partner and be paid out for confirmed deliveries.',
-          'Request sizes and frequency would have sensible limits, and unusual patterns would go to a person for review.',
-        ],
-      },
+    topic: 'donors',
+    q: 'Where does my money go? Is it tax-deductible?',
+    a: 'Through a registered nonprofit partner, never through us. See the Money tab.',
+    more: [
+      'The partner holds pledges and pays the farm once delivery is confirmed.',
+      'That set-up is what could make gifts deductible.',
+    ],
+    note: 'None of this is set up yet. Every pledge here is simulated.',
+  },
+  {
+    topic: 'trust',
+    q: 'How do you know the food arrived?',
+    a: 'Only the pantry can mark it delivered, with the pounds it actually received.',
+    more: [
+      'Impact counts confirmed pounds only, never pledges.',
+      'Next: the farm confirms too, and any mismatch is flagged for review.',
     ],
   },
   {
-    title: 'Partners',
-    items: [
-      {
-        q: 'Who actually delivers the food?',
-        lead: 'In this plan, the farm delivers, and the request pays for it.',
-        points: [
-          'Every goal includes a delivery cost, so the farm (or a driver it already uses) is paid for the trip, not just the produce.',
-          'Matches favor farms close to the pantry, which keeps trips short.',
-          'Honest note: the delivery cost in the demo ($10 plus $2.50 a mile) is an assumption. A pilot would tell us whether farms prefer to deliver themselves or hand off to a courier or volunteers.',
-        ],
-      },
-      {
-        q: 'What about food safety?',
-        lead: 'The pantry stays in charge of what it accepts, the same as with any donated produce.',
-        points: [
-          'The demo only handles fresh produce, not meat, dairy or cooked food.',
-          'Farms would be vetted before joining, and short, local trips mean less time between harvest and the pantry.',
-          'The pantry checks the food on arrival and can record fewer pounds or reject a delivery, and only what it confirms counts.',
-          'Honest note: we have not worked through the specific handling rules with a food bank yet. We would follow theirs.',
-        ],
-      },
-      {
-        q: 'Why would farms take part?',
-        lead: 'They get a fair price for surplus that might otherwise go unsold, and the delivery is paid for.',
-        points: [
-          'Orders are specific, close by and small, so taking one on is not a big commitment.',
-          'Farms that would rather give their surplus away can, and the request then only funds the delivery.',
-          'Honest note: we have not talked to farms yet. Prices and pickup windows would need their input.',
-        ],
-      },
-      {
-        q: 'Isn’t this already being done?',
-        lead: 'Parts of it are, which tells us the problem is real.',
-        points: [
-          'Existing programs already move surplus farm food to food banks, or help growers find pantries to donate to.',
-          'What we add is one workflow: a specific pantry shortage, an explainable farm match, community funding, and a pantry-confirmed delivery.',
-          'We would want to work alongside groups like these, not compete with them.',
-        ],
-      },
-      {
-        q: 'What about pantry staff who aren’t comfortable with apps?',
-        lead: 'The demo is designed to be easy to read and easy to use.',
-        points: [
-          'Map view shows highways and city names, and "Larger text" makes every label bigger.',
-          'A request can be typed the way you would say it ("low on greens, maybe 100 lbs, need it by tomorrow") and the form fills itself in.',
-          'A food bank coordinator could also post on a pantry’s behalf.',
-        ],
-      },
+    topic: 'trust',
+    q: 'What stops fake requests or fraud?',
+    a: 'Only vetted organizations take part, and money never goes to an individual.',
+    more: [
+      'Funds sit with the nonprofit partner and pay out for confirmed deliveries.',
+      'Limits on request size and frequency; unusual patterns go to a person.',
     ],
   },
   {
-    title: 'Honest limits',
-    items: [
-      {
-        q: 'What doesn’t work yet?',
-        lead: 'This is a demo. Here is exactly what is simulated or simplified.',
-        points: [
-          'Every pantry, farm, pledge and delivery is sample data. There are no accounts, no database and no real payments.',
-          'Distances are straight-line estimates, not driving routes, and the road map is simplified.',
-          'The request reader is keyword matching, not AI. A Gemini-powered reader is next, run from a server so no key sits in the browser.',
-          'Next steps: a pilot with one pantry network, real accounts, driving distances, and combining several pickups into one route.',
-        ],
-      },
+    topic: 'partners',
+    q: 'Who delivers the food?',
+    a: 'The farm, and every goal includes the cost of the trip.',
+    more: ['Matches favor nearby farms, which keeps trips short.'],
+    note: 'The delivery cost ($10 + $2.50 a mile) is an assumption a pilot would test.',
+  },
+  {
+    topic: 'partners',
+    q: 'What about food safety?',
+    a: 'The pantry decides what it accepts, as with any donated produce.',
+    more: [
+      'Fresh produce only: no meat, dairy or cooked food.',
+      'The pantry can record fewer pounds or reject a delivery.',
+    ],
+    note: 'We’d follow a food bank’s handling rules; we haven’t worked through them yet.',
+  },
+  {
+    topic: 'partners',
+    q: 'Why would farms take part?',
+    a: 'A fair, locked-in price for surplus, with delivery paid for.',
+    more: ['Orders are small and nearby. Farms can also donate surplus and just get the delivery funded.'],
+    note: 'We haven’t talked to farms yet.',
+  },
+  {
+    topic: 'partners',
+    q: 'Isn’t this already being done?',
+    a: 'Parts of it are. We join them into one workflow and want to work alongside those groups.',
+    more: ['Our addition: a specific shortage, an explained farm match, community funding and a confirmed delivery.'],
+  },
+  {
+    topic: 'partners',
+    q: 'What if pantry staff aren’t comfortable with apps?',
+    a: 'Plain map view, larger text, and requests typed the way you’d say them.',
+    more: ['A food bank coordinator could also post on a pantry’s behalf.'],
+  },
+  {
+    topic: 'limits',
+    q: 'What doesn’t work yet?',
+    a: 'This is a demo: sample data, no accounts, no database, no real payments.',
+    more: [
+      'Distances are straight-line and the road map is simplified.',
+      'The request reader is keyword matching, not AI.',
+      'Next: a pilot with one pantry network, real accounts and driving routes.',
     ],
   },
 ];
 
-export const QUESTION_COUNT = SECTIONS.reduce((n, s) => n + s.items.length, 0);
+export const QUESTION_COUNT = QUESTIONS.length;
+
+const labelOf = Object.fromEntries(TOPICS.map((t) => [t.id, t.label]));
 
 export default function QuestionsView() {
-  const listRef = useRef(null);
-  const setAll = (open) => {
-    listRef.current?.querySelectorAll('details').forEach((d) => {
-      d.open = open;
-    });
-  };
+  const [topic, setTopic] = useState('all');
+  const [open, setOpen] = useState(null); // the question whose details are showing
+  const shown = topic === 'all' ? QUESTIONS : QUESTIONS.filter((x) => x.topic === topic);
 
   return (
-    <section className="impact questions" aria-label="Hard questions">
-      <div className="q-head">
-        <div>
-          <h2>Hard questions</h2>
-          <p className="muted">
-            Straight answers to what judges, pantries and donors usually ask. These are our plans and reasoning. None of
-            it has been tested with real pantries, farms or donors yet.
-          </p>
-        </div>
-        <div className="q-tools">
-          <button className="btn btn-ghost btn-sm" onClick={() => setAll(true)}>
-            Open all
-          </button>
-          <button className="btn btn-ghost btn-sm" onClick={() => setAll(false)}>
-            Close all
-          </button>
-        </div>
+    <section className="impact faq" aria-label="Hard questions">
+      <header className="faq-head">
+        <h2>Hard questions</h2>
+        <p className="muted">Straight answers. These are our plans, not yet tested with real pantries, farms or donors.</p>
+      </header>
+
+      <div className="faq-filters" role="group" aria-label="Filter by topic">
+        {[{ id: 'all', label: 'All' }, ...TOPICS].map((t) => {
+          const n = t.id === 'all' ? QUESTIONS.length : QUESTIONS.filter((x) => x.topic === t.id).length;
+          return (
+            <button
+              key={t.id}
+              className={topic === t.id ? 'faq-chip on' : 'faq-chip'}
+              aria-pressed={topic === t.id}
+              onClick={() => {
+                setTopic(t.id);
+                setOpen(null);
+              }}
+            >
+              {t.label}
+              <span className="faq-count">{n}</span>
+            </button>
+          );
+        })}
       </div>
 
-      <div ref={listRef} className="q-list">
-        {SECTIONS.map((sec, si) => (
-          <div key={sec.title} className="q-section">
-            <h3 className="q-section-title">{sec.title}</h3>
-            {sec.items.map((it, ii) => (
-              <details key={it.q} className="q-item" open={si === 0 && ii === 0}>
-                <summary>
-                  <span>{it.q}</span>
-                  <span className="q-chev" aria-hidden="true" />
-                </summary>
-                <div className="q-body">
-                  <p className="q-lead">{it.lead}</p>
+      <ul className="faq-grid" key={topic}>
+        {shown.map((it, i) => {
+          const isOpen = open === it.q;
+          const id = `faq-${QUESTIONS.indexOf(it)}`;
+          return (
+            <li key={it.q} className={isOpen ? 'faq-card is-open' : 'faq-card'} style={{ animationDelay: `${i * 0.03}s` }}>
+              <p className="faq-topic">
+                <svg viewBox="-10 -10 20 20" aria-hidden="true">
+                  <polygon points="0,-9 2.6,-2.6 9,-2.6 3.9,1.6 5.7,8.5 0,4.4 -5.7,8.5 -3.9,1.6 -9,-2.6 -2.6,-2.6" />
+                </svg>
+                {labelOf[it.topic]}
+              </p>
+              <h3 className="faq-q">{it.q}</h3>
+              <p className="faq-a">{it.a}</p>
+              {isOpen && (
+                <div className="faq-more" id={id}>
                   <ul>
-                    {it.points.map((p) => (
+                    {it.more.map((p) => (
                       <li key={p}>{p}</li>
                     ))}
                   </ul>
+                  {it.note && (
+                    <p className="faq-note">
+                      <strong>Honest note:</strong> {it.note}
+                    </p>
+                  )}
                 </div>
-              </details>
-            ))}
-          </div>
-        ))}
-      </div>
+              )}
+              <button className="faq-toggle" aria-expanded={isOpen} aria-controls={isOpen ? id : undefined} onClick={() => setOpen(isOpen ? null : it.q)}>
+                {isOpen ? 'Less' : 'More'}
+                <span className="faq-chev" aria-hidden="true" />
+              </button>
+            </li>
+          );
+        })}
+      </ul>
     </section>
   );
 }
