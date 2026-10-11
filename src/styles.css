@@ -1883,6 +1883,8 @@ tr:last-child td {
 }
 .full-view .topbar .brand,
 .full-view .topbar .tabs,
+.full-view .topbar .sample-badge,
+.full-view .topbar .menu-btn,
 .full-view .topbar .top-actions > * {
   pointer-events: auto;
 }
@@ -2323,4 +2325,176 @@ tr:last-child td {
 }
 .faq-toggle[aria-expanded='true'] .faq-chev {
   transform: translateY(1px) rotate(225deg);
+}
+
+/* ---------- Phones: lighter welcome popup and a one-line footer ---------- */
+.foot-short {
+  display: none;
+}
+@media (max-width: 640px) {
+  .foot-long {
+    display: none;
+  }
+  .foot-short {
+    display: inline;
+  }
+  .foot,
+  .full-view .foot {
+    padding: 5px 12px;
+    font-size: 0.72rem;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* Welcome popup: shorter, and the "why it's different" points shrink to their titles */
+  .modal.welcome {
+    max-height: 82vh;
+    max-height: 82dvh;
+  }
+  .welcome-hero {
+    padding: 22px 50px 10px 18px;
+  }
+  .welcome-hero h2 {
+    font-size: 1.4rem;
+    margin: 6px 0 6px;
+  }
+  .welcome-sub {
+    font-size: 0.92rem;
+    line-height: 1.4;
+  }
+  .welcome-diff-title {
+    display: none;
+  }
+  .welcome-diffs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .welcome-diffs li {
+    padding: 6px 10px;
+  }
+  .welcome-diffs li span {
+    display: none;
+  }
+  .welcome-diffs strong {
+    font-size: 0.85rem;
+  }
+
+  .welcome-note {
+    margin-bottom: 10px;
+    padding: 6px 10px;
+    font-size: 0.74rem;
+  }
+  .welcome-actions {
+    padding-top: 10px;
+    gap: 8px;
+  }
+  .welcome-actions .btn {
+    flex: 1 1 120px;
+    padding: 8px 10px;
+  }
+}
+
+/* ---------- Phones: compact top bar, cleaner details sheet, tour that doesn't hide its target ---------- */
+.menu-btn {
+  display: none;
+}
+.map-sidebar-bar {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 8px;
+}
+.map-sidebar .panel {
+  /* soft fade where the scrolled content meets the Close bar, instead of a hard cut */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14px);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 14px);
+}
+@media (max-width: 640px) {
+  .topbar {
+    gap: 8px 10px;
+    padding: 10px 12px;
+  }
+  .brand {
+    order: 0;
+  }
+  .brand .logo {
+    width: 30px;
+    height: 30px;
+  }
+  .wordmark {
+    font-size: 1.2rem !important;
+  }
+  .sample-badge {
+    order: 1;
+  }
+  .menu-btn {
+    order: 2;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 36px;
+    padding: 0;
+    font-size: 1.1rem;
+  }
+  .tabs {
+    order: 3;
+    width: 100%;
+  }
+  .top-actions {
+    order: 4;
+    display: none;
+    width: 100%;
+  }
+  .top-actions.is-open {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 14px;
+    background: rgba(27, 9, 72, 0.92);
+    border: 1px solid var(--line);
+    backdrop-filter: blur(8px);
+  }
+  .map-full .top-actions.is-open {
+    background: rgba(255, 255, 255, 0.95);
+  }
+  .top-actions.is-open .btn {
+    min-height: 42px;
+  }
+  .map-sidebar-bar .btn {
+    padding: 4px 10px;
+  }
+  /* Tour card: tighter so more of the picture shows above it */
+  .tour,
+  .tour-wide {
+    padding: 12px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+    gap: 8px;
+    max-height: 46vh;
+  }
+  .tour h2 {
+    font-size: 1.1rem;
+  }
+  .tour p {
+    font-size: 0.92rem;
+    line-height: 1.4;
+  }
+  .tour-actions .btn {
+    min-height: 40px;
+    padding-inline: 12px;
+  }
+}
+@media (max-width: 900px) {
+  /* During the tour the details sheet moves to the top, above the tour card */
+  .has-tour .map-sidebar {
+    top: calc(var(--topbar-h, 64px) + 6px);
+    bottom: auto;
+    max-height: calc(50vh - var(--topbar-h, 64px));
+  }
+  .has-tour [data-tour] {
+    scroll-margin-bottom: 12px;
+  }
+  /* ...and steps that point at a planet or star hide it, so the pointer lands on the map, not the sheet */
+  .tour-on-map .map-sidebar {
+    display: none;
+  }
 }

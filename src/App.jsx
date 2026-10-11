@@ -85,10 +85,14 @@ function MapIcon() {
   );
 }
 
+// Phones open on the plain map; larger screens start with the first pantry's request open for the demo.
+const startPantry = () =>
+  typeof window !== 'undefined' && window.matchMedia?.('(max-width: 900px)').matches ? null : 'p1';
+
 export default function App() {
   const [requests, setRequests] = useState(seed);
   const [view, setView] = useState('sky');
-  const [selectedPantryId, setSelectedPantryId] = useState('p1');
+  const [selectedPantryId, setSelectedPantryId] = useState(startPantry);
   const [hoverFarmId, setHoverFarmId] = useState(null);
   const [selectedFarmId, setSelectedFarmId] = useState(null); // a farm (star) whose details are open
   const [modal, setModal] = useState(null); // { pantryId } | null
@@ -97,6 +101,7 @@ export default function App() {
   const [tour, setTour] = useState(null); // { step, playing } while the guided tour is open
   const [intro, setIntro] = useState(true); // the welcome popup: open on load, reopened by the About button
   const tourBase = useRef(null); // the person's own view settings, restored when the tour ends
+  const [menuOpen, setMenuOpen] = useState(false); // phone header menu
   const [viewKey, setViewKey] = useState(0); // bumped to put the sky / map back to its normal zoom
   const headerRef = useRef(null);
   const footRef = useRef(null);
@@ -212,7 +217,7 @@ export default function App() {
 
   const reset = () => {
     setRequests(seed());
-    setSelectedPantryId('p1');
+    setSelectedPantryId(startPantry());
     setSelectedFarmId(null);
     setHoverFarmId(null);
     setView('sky');
@@ -291,6 +296,7 @@ export default function App() {
   // Sky and Map view fill the screen: the see-through top bar floats over the picture and
   // details open in a side bar on demand.
   const fullView = view === 'sky';
+  const tourOnMap = !!tour && /^g\[data-tour=/.test(TOUR_STEPS[tour.step]?.target || '');
   const mapFull = fullView && mapMode === 'map';
   const sidebarOpen = !!(selectedPantryId || selectedFarmId);
   const closeSidebar = () => {
@@ -301,7 +307,7 @@ export default function App() {
 
   return (
     <div
-      className={`app${tour ? ' has-tour' : ''}${fullView ? ' full-view' : ''}${mapFull ? ' map-full' : ''}`}
+      className={`app${tour ? ' has-tour' : ''}${fullView ? ' full-view' : ''}${mapFull ? ' map-full' : ''}${tourOnMap ? ' tour-on-map' : ''}`}
       style={{ '--topbar-h': `${bars.top}px`, '--foot-h': `${bars.foot}px` }}
     >
       <header className="topbar" ref={headerRef}>
@@ -329,10 +335,20 @@ export default function App() {
             Join
           </button>
         </nav>
-        <div className="top-actions">
-          <span className="sample-badge" title="Every pantry, farm, pledge and delivery is invented for the demo">
-            Sample data
-          </span>
+        <span className="sample-badge" title="Every pantry, farm, pledge and delivery is invented for the demo">
+          Sample data
+        </span>
+        {/* Phones only: the action buttons fold into this menu so the top bar stays short */}
+        <button
+          className="btn btn-ghost btn-sm menu-btn"
+          aria-expanded={menuOpen}
+          aria-controls="top-actions"
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          onClick={() => setMenuOpen((v) => !v)}
+        >
+          {menuOpen ? '✕' : '☰'}
+        </button>
+        <div id="top-actions" className={menuOpen ? 'top-actions is-open' : 'top-actions'} onClick={() => setMenuOpen(false)}>
           <button
             className="btn btn-ghost btn-sm"
             onClick={() => {
@@ -467,8 +483,11 @@ export default function App() {
       )}
 
       <footer className="foot" ref={footRef}>
-        All pantries, farms, pledges and deliveries are sample data. No real payments are taken, and nothing here claims a
-        partnership with any organization.
+        <span className="foot-long">
+          All pantries, farms, pledges and deliveries are sample data. No real payments are taken, and nothing here claims
+          a partnership with any organization.
+        </span>
+        <span className="foot-short">Sample data only · No real payments · No partnerships claimed</span>
       </footer>
 
       {tour && (
