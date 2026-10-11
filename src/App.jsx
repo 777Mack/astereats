@@ -10,6 +10,8 @@ import Tour from './components/Tour.jsx';
 import FarmPanel from './components/FarmPanel.jsx';
 import QuestionsView from './components/QuestionsView.jsx';
 import IntroModal from './components/IntroModal.jsx';
+import MyPledges from './components/MyPledges.jsx';
+import { labelFor } from './lib/categories.js';
 import MoneyView from './components/MoneyView.jsx';
 import JoinView from './components/JoinView.jsx';
 import { TOUR_STEPS } from './lib/tourSteps.js';
@@ -102,6 +104,16 @@ export default function App() {
   const [intro, setIntro] = useState(true); // the welcome popup: open on load, reopened by the About button
   const tourBase = useRef(null); // the person's own view settings, restored when the tour ends
   const [menuOpen, setMenuOpen] = useState(false); // phone header menu
+  const [pledges, setPledges] = useState([]); // this visitor's own pledges: { requestId, pantryId, category, amount, at }
+  const [showPledges, setShowPledges] = useState(false);
+  const [toast, setToast] = useState(null); // { key, title, body }
+  const toastTimer = useRef(0);
+  const thank = (title, body) => {
+    clearTimeout(toastTimer.current);
+    setToast({ key: Date.now(), title, body });
+    toastTimer.current = setTimeout(() => setToast(null), 5200);
+  };
+  useEffect(() => () => clearTimeout(toastTimer.current), []);
   const [viewKey, setViewKey] = useState(0); // bumped to put the sky / map back to its normal zoom
   const headerRef = useRef(null);
   const footRef = useRef(null);
@@ -175,6 +187,20 @@ export default function App() {
 
   const pledge = (amount) => {
     if (!selectedRequest) return;
+    const r0 = selectedRequest;
+    const add = Math.min(amount, r0.goal - r0.pledged);
+    if (add > 0) {
+      const area = pantryById[r0.pantryId].area;
+      const food = labelFor(r0.category).toLowerCase();
+      const lbs = r0.goal > 0 ? Math.max(1, Math.round((add / r0.goal) * r0.lbsPlanned)) : 0;
+      setPledges((ps) => [...ps, { requestId: r0.id, pantryId: r0.pantryId, category: r0.category, amount: add, at: Date.now() }]);
+      if (r0.pledged + add >= r0.goal) {
+        thank(`You completed ${area}’s goal!`, `Your $${add} finished it. The farm can start getting ${r0.lbsPlanned} lbs of ${food} ready.`);
+      } else {
+        const pct = Math.round(((r0.pledged + add) / r0.goal) * 100);
+        thank(`Thank you for supporting ${area}!`, `Your $${add} covers about ${lbs} lbs of ${food}. The goal is now ${pct}% funded.`);
+      }
+    }
     update(selectedRequest.id, (r) => {
       const add = Math.min(amount, r.goal - r.pledged);
       if (add <= 0) return r;
@@ -187,6 +213,15 @@ export default function App() {
   // pound is confirmed; until then it is "partial" and the planet fills with gold as shipments arrive.
   const confirmDelivery = (lbs) => {
     if (!selectedRequest) return;
+    // Let a donor know when food they helped fund arrives
+    if (pledges.some((p) => p.requestId === selectedRequest.id)) {
+      const r0 = selectedRequest;
+      const total = Math.min(r0.lbsPlanned, r0.deliveredLbs + lbs);
+      thank(
+        total >= r0.lbsPlanned ? 'Food you helped fund arrived!' : 'A shipment you helped fund arrived',
+        `${pantryById[r0.pantryId].area} confirmed ${total} of ${r0.lbsPlanned} lbs of ${labelFor(r0.category).toLowerCase()}.`,
+      );
+    }
     update(selectedRequest.id, (r) => {
       const deliveredLbs = Math.min(r.lbsPlanned, r.deliveredLbs + lbs);
       return { ...r, deliveredLbs, status: deliveredLbs >= r.lbsPlanned ? 'delivered' : 'partial' };
@@ -227,6 +262,8 @@ export default function App() {
 
   const reset = () => {
     setRequests(seed());
+    setPledges([]);
+    setToast(null);
     setSelectedPantryId(startPantry());
     setSelectedFarmId(null);
     setHoverFarmId(null);
@@ -358,6 +395,7 @@ export default function App() {
           onClick={() => setMenuOpen((v) => !v)}
         >
           {menuOpen ? '✕' : '☰'}
+          {!menuOpen && pledges.length > 0 && <span className="menu-dot" aria-hidden="true" />}
         </button>
         <div id="top-actions" className={menuOpen ? 'top-actions is-open' : 'top-actions'} onClick={() => setMenuOpen(false)}>
           <button
@@ -371,6 +409,10 @@ export default function App() {
           </button>
           <button className="btn btn-primary btn-sm" onClick={startTour} disabled={!!tour}>
             Take the tour
+          </button>
+          <button className="btn btn-ghost btn-sm pledges-btn" onClick={() => setShowPledges(true)}>
+            My pledges
+            {pledges.length > 0 && <span className="pledges-count">{pledges.length}</span>}
           </button>
           <button
             className="btn btn-ghost btn-sm"
@@ -523,6 +565,46 @@ export default function App() {
           onExit={exitTour}
           onReplay={() => tourGo(0)}
           onSetPlaying={setTourPlaying}
+        />
+      )}
+
+      {/* Thank-you note after a pledge (and when food a donor funded arrives) */}
+      <div className="toast-region" aria-live="polite">
+        {toast && (
+          <div key={toast.key} className="toast" role="status">
+            <svg className="toast-icon" viewBox="-12 -12 24 24" aria-hidden="true">
+              <polygon points="0,-11 3.2,-3.4 11,-3.4 4.7,1.5 7.1,9.9 0,5.3 -7.1,9.9 -4.7,1.5 -11,-3.4 -3.2,-3.4" />
+            </svg>
+            <div>
+              <strong>{toast.title}</strong>
+              <p>{toast.body}</p>
+              <button
+                className="link"
+                onClick={() => {
+                  setToast(null);
+                  setShowPledges(true);
+                }}
+              >
+                See my pledges
+              </button>
+            </div>
+            <button className="toast-x" onClick={() => setToast(null)} aria-label="Dismiss">
+              ✕
+            </button>
+          </div>
+        )}
+      </div>
+
+      {showPledges && (
+        <MyPledges
+          pledges={pledges}
+          requests={requests}
+          pantryById={pantryById}
+          onOpen={(pantryId) => {
+            setShowPledges(false);
+            openFromImpact(pantryId);
+          }}
+          onClose={() => setShowPledges(false)}
         />
       )}
 

@@ -3039,3 +3039,194 @@ tr:last-child td {
   font-size: 0.82rem;
   color: var(--ink-dim);
 }
+
+/* ---------- Thank-you toast ---------- */
+.toast-region {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--foot-h, 32px) + 14px);
+  transform: translateX(-50%);
+  z-index: 35;
+  width: min(440px, calc(100vw - 24px));
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: start;
+  padding: 14px 14px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--gold);
+  background: rgba(39, 16, 95, 0.96);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 34px rgba(14, 4, 40, 0.55), 0 0 0 4px rgba(242, 185, 12, 0.12);
+  animation: toast-in 0.45s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.toast-icon {
+  width: 28px;
+  height: 28px;
+  fill: var(--gold);
+  filter: drop-shadow(0 0 6px rgba(242, 185, 12, 0.7));
+  animation: toast-spin 0.9s ease-out both;
+}
+@keyframes toast-spin {
+  from {
+    transform: rotate(-120deg) scale(0.4);
+  }
+  to {
+    transform: none;
+  }
+}
+.toast strong {
+  display: block;
+  font-size: 1rem;
+}
+.toast p {
+  margin: 2px 0 4px;
+  font-size: 0.88rem;
+  color: var(--ink-dim);
+  line-height: 1.4;
+}
+.toast .link {
+  font-size: 0.85rem;
+}
+.toast-x {
+  width: 30px;
+  height: 30px;
+  margin: -6px -6px 0 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-dim);
+  cursor: pointer;
+}
+.toast-x:hover {
+  background: rgba(155, 117, 219, 0.3);
+  color: var(--ink);
+}
+.has-tour .toast-region {
+  display: none;
+}
+
+/* ---------- My pledges ---------- */
+.pledges-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.pledges-count {
+  min-width: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--night);
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 20px;
+  text-align: center;
+}
+.modal.pledges {
+  width: min(520px, 100%);
+}
+.pledges-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.pledges-empty {
+  display: grid;
+  gap: 4px;
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px dashed var(--lavender);
+  text-align: center;
+}
+.pledges-totals {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.pledges-totals div {
+  display: grid;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  text-align: center;
+}
+.pledges-totals strong {
+  font-size: 1.3rem;
+  color: var(--gold);
+}
+.pledges-totals span {
+  font-size: 0.75rem;
+  color: var(--ink-dim);
+}
+.pledges-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.pledges-list li {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border-left: 3px solid var(--gold);
+  background: rgba(27, 9, 72, 0.5);
+}
+.pledges-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pledges-row.small {
+  font-size: 0.82rem;
+  color: var(--ink-dim);
+}
+.pledges-row strong {
+  color: var(--ink);
+}
+.pledges-lbs {
+  color: var(--gold);
+  font-weight: 650;
+}
+@media (max-width: 640px) {
+  .top-actions.is-open .pledges-btn {
+    justify-content: center;
+  }
+  .pledges-totals strong {
+    font-size: 1.05rem;
+  }
+}
+
+.menu-btn {
+  position: relative;
+}
+.menu-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 2px var(--night);
+}

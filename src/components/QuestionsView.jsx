@@ -53,6 +53,17 @@ const QUESTIONS = [
     note: 'None of this is set up yet. Every pledge here is simulated.',
   },
   {
+    topic: 'donors',
+    q: 'Do I need an account to donate?',
+    a: 'No. You’d give with just an email, get a receipt, and use its link to see your pledge history.',
+    more: [
+      'The email is how refunds and tax receipts reach you if something goes wrong.',
+      'An account stays optional, for regulars who want everything in one place.',
+      'Your history is private. There is no donor leaderboard.',
+    ],
+    note: 'In this demo, “My pledges” only lasts until you reload or reset.',
+  },
+  {
     topic: 'trust',
     q: 'How do you know the food arrived?',
     a: 'Only the pantry can mark it delivered, with the pounds it actually received.',
