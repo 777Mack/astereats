@@ -3237,3 +3237,19 @@ tr:last-child td {
   gap: 8px;
   border-radius: 999px;
 }
+
+/* Laptop widths: tighter top bar so the tabs and actions stay on one line */
+@media (min-width: 901px) and (max-width: 1600px) {
+  .topbar {
+    gap: 12px;
+  }
+  .tab {
+    padding: 6px 13px;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .top-actions .btn-sm {
+    padding: 6px 10px;
+  }
+}

@@ -8,10 +8,24 @@ const MIN_ZOOM = 0.4; // fully zoomed out shows 2.5 times the normal area
 const MAX_ZOOM = 4;
 const DRAG_START_PX = 5;
 
+// The starting view. On a tall, narrow screen (a phone held upright) the whole drawing would shrink to
+// fit the width, so start zoomed in on the middle, where every pin sits, to use the screen better.
+const homeFor = (W, H, size) => {
+  if (size.h > size.w * 1.1) {
+    const w = W * 0.68;
+    const h = (w * H) / W;
+    return { x: (W - w) / 2, y: (H - h) / 2, w, h };
+  }
+  return { x: 0, y: 0, w: W, h: H };
+};
+
 export function usePanZoom(W, H, resetKey) {
-  const home = useCallback(() => ({ x: 0, y: 0, w: W, h: H }), [W, H]);
-  const [vb, setVb] = useState(home);
   const [size, setSize] = useState({ w: W, h: H }); // the SVG's size on screen
+  const sizeRef = useRef(size);
+  sizeRef.current = size;
+  const home = useCallback(() => homeFor(W, H, sizeRef.current), [W, H]);
+  const [vb, setVb] = useState(home);
+  const touched = useRef(false); // has the person panned or zoomed since the last reset?
   const [panning, setPanning] = useState(false);
   const svgRef = useRef(null);
   const vbRef = useRef(vb);
@@ -20,7 +34,14 @@ export function usePanZoom(W, H, resetKey) {
   const gesture = useRef(null);
   const suppressClick = useRef(false);
 
-  useEffect(() => setVb(home()), [resetKey, home]);
+  useEffect(() => {
+    touched.current = false;
+    setVb(home());
+  }, [resetKey, home]);
+  // Until the person moves the view, keep it framed for the current screen shape (rotation, first layout).
+  useEffect(() => {
+    if (!touched.current) setVb(homeFor(W, H, size));
+  }, [size, W, H]);
 
   useEffect(() => {
     const el = svgRef.current;
@@ -65,6 +86,7 @@ export function usePanZoom(W, H, resetKey) {
       cx = r.left + r.width / 2;
       cy = r.top + r.height / 2;
     }
+    touched.current = true;
     setVb(place(toSvg(cx, cy, v), cx, cy, clampW(v.w / factor)));
   };
 
@@ -105,6 +127,7 @@ export function usePanZoom(W, H, resetKey) {
       if (!g.moved && Math.hypot(now[0].x - a.x, now[0].y - a.y) < DRAG_START_PX) return;
       if (!g.moved) {
         g.moved = true;
+        touched.current = true;
         setPanning(true);
         svgRef.current.setPointerCapture?.(e.pointerId);
       }
@@ -117,6 +140,7 @@ export function usePanZoom(W, H, resetKey) {
       const m0 = { x: (a0.x + b0.x) / 2, y: (a0.y + b0.y) / 2 };
       const m1 = { x: (a1.x + b1.x) / 2, y: (a1.y + b1.y) / 2 };
       g.moved = true;
+      touched.current = true;
       setPanning(true);
       setVb(place(toSvg(m0.x, m0.y, g.startVb), m1.x, m1.y, clampW(g.startVb.w / (d1 / d0))));
     }
@@ -158,7 +182,10 @@ export function usePanZoom(W, H, resetKey) {
     canZoomOut: vb.w < W / MIN_ZOOM - 0.5,
     zoomIn: () => zoomAt(1.4),
     zoomOut: () => zoomAt(1 / 1.4),
-    reset: () => setVb(home()),
+    reset: () => {
+      touched.current = false;
+      setVb(home());
+    },
     handlers: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: onPointerUp, onClickCapture },
   };
 }
