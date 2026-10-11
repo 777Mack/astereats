@@ -6,5 +6,5 @@ import react from '@vitejs/plugin-react';
 // editing this file.
 export default defineConfig({
   plugins: [react()],
-  base: '/astereats',
+  base: '/astereats/',
 });
