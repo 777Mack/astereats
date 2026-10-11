@@ -19,12 +19,47 @@ const pantryById = Object.fromEntries(pantries.map((p) => [p.id, p]));
 const farmById = Object.fromEntries(farms.map((f) => [f.id, f]));
 const seed = () => buildSeedRequests(sample.seedRequests, pantries, farms);
 
+// The mark: an aster, the star-shaped flower named after the Greek word for star.
+// Long and short petals make it read as both a bloom (farms) and a starburst (the sky).
+const PETALS = Array.from({ length: 16 }, (_, i) => i * 22.5);
+
 function Logo() {
   return (
     <svg className="logo" viewBox="0 0 32 32" aria-hidden="true">
       <rect width="32" height="32" rx="8" fill="#1B0948" />
-      <polygon points="16,4 19.5,12.5 28,13 21.5,18.8 23.6,27.5 16,22.8 8.4,27.5 10.5,18.8 4,13 12.5,12.5" fill="#F2B90C" />
+      <g transform="translate(16 16)">
+        {PETALS.map((a, i) => (
+          <ellipse
+            key={a}
+            cx="0"
+            cy={i % 2 ? -7.6 : -8.6}
+            rx={i % 2 ? 1.25 : 1.7}
+            ry={i % 2 ? 3.6 : 4.9}
+            fill={i % 2 ? '#9B75DB' : '#F6F1FF'}
+            transform={`rotate(${a})`}
+          />
+        ))}
+        <circle r="4.6" fill="#F2B90C" />
+        <circle r="4.6" fill="none" stroke="#1B0948" strokeWidth="0.8" strokeDasharray="0.6 1.4" />
+      </g>
     </svg>
+  );
+}
+
+// "AsterEats" -> "Aster" + gold "Eats". A name without a second capital is shown whole.
+function Wordmark() {
+  const m = APP_NAME.match(/^([A-Z][a-z]+)([A-Z].*)$/);
+  return (
+    <h1 className="wordmark">
+      {m ? (
+        <>
+          {m[1]}
+          <span className="wordmark-accent">{m[2]}</span>
+        </>
+      ) : (
+        APP_NAME
+      )}
+    </h1>
   );
 }
 
@@ -273,7 +308,7 @@ export default function App() {
         <div className="brand">
           <Logo />
           <div>
-            <h1>{APP_NAME}</h1>
+            <Wordmark />
             <p className="tagline">{TAGLINE}</p>
           </div>
         </div>

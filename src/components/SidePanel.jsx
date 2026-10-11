@@ -151,6 +151,15 @@ function FarmSummary({ farm, request }) {
 function FundingCard({ request, onPledge }) {
   const remaining = Math.max(0, request.goal - request.pledged);
   const options = [5, 10, 25].filter((a) => a < remaining);
+  const [custom, setCustom] = useState('');
+  const amount = Math.floor(Number(custom));
+  const customOk = custom !== '' && amount >= 1 && amount <= Math.ceil(remaining);
+  const pledgeCustom = (e) => {
+    e.preventDefault();
+    if (!customOk) return;
+    onPledge(amount);
+    setCustom('');
+  };
   return (
     <div className="card">
       <StardustMeter pledged={request.pledged} goal={request.goal} />
@@ -168,6 +177,30 @@ function FundingCard({ request, onPledge }) {
           {options.length ? `Cover the rest (${money(remaining)})` : `Pledge ${money(remaining)} to finish`}
         </button>
       </div>
+      <form className="pledge-custom" onSubmit={pledgeCustom}>
+        <label className="pledge-input">
+          <span aria-hidden="true">$</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min="1"
+            max={Math.ceil(remaining)}
+            step="1"
+            placeholder="Other amount"
+            aria-label={`Custom pledge in dollars, up to ${money(remaining)}`}
+            value={custom}
+            onChange={(e) => setCustom(e.target.value)}
+          />
+        </label>
+        <button type="submit" className="btn btn-ghost" disabled={!customOk}>
+          Pledge{customOk ? ` ${money(amount)}` : ''}
+        </button>
+      </form>
+      {custom !== '' && !customOk && (
+        <p className="note" role="status">
+          Enter a whole amount from $1 to {money(remaining)}.
+        </p>
+      )}
       <p className="note">
         Simulated pledges for the demo. No real payment is taken. In a real version, pledges are held until the goal is
         reached and refunded if delivery is not confirmed (see the Money tab).

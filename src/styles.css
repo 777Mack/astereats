@@ -88,6 +88,19 @@ textarea {
   letter-spacing: 0.02em;
   line-height: 1.1;
 }
+/* Wordmark: Space Grotesk (Google Fonts) with a system fallback if the font can't load */
+.wordmark {
+  font-family: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-weight: 700;
+  font-size: 1.4rem !important;
+  letter-spacing: -0.01em !important;
+}
+.wordmark-accent {
+  color: var(--gold);
+}
+.map-full .wordmark-accent {
+  color: #b07d00; /* darker gold so it reads on the light map */
+}
 .tagline {
   font-size: 0.82rem;
   color: var(--ink-dim);
@@ -348,6 +361,44 @@ textarea {
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+}
+.pledge-custom {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+.pledge-input {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 0 10px;
+  border: 1px solid var(--lavender);
+  border-radius: 10px;
+  background: rgba(27, 9, 72, 0.7);
+}
+.pledge-input:focus-within {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+.pledge-input span {
+  color: var(--gold);
+  font-weight: 700;
+}
+.pledge-input input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 0;
+  border: 0;
+  background: transparent;
+  outline: none;
+  -moz-appearance: textfield;
+}
+.pledge-input input::-webkit-outer-spin-button,
+.pledge-input input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 .chip {
   font-size: 0.82rem;
