@@ -447,7 +447,8 @@ export default function App() {
               largeText={largeText}
               viewKey={viewKey}
             />
-            <div className="view-controls" role="group" aria-label="Picture style" data-tour="views">
+            <div className="view-controls" role="group" aria-label="Picture style">
+              <span className="view-toggle" data-tour="views">
               <button className={mapMode === 'sky' ? 'seg seg-icon-btn on' : 'seg seg-icon-btn'} aria-pressed={mapMode === 'sky'} aria-label="Sky view" title="Sky view" onClick={() => setMapMode('sky')}>
                 <SkyIcon />
               </button>
@@ -457,6 +458,7 @@ export default function App() {
                 }}>
                 <MapIcon />
               </button>
+              </span>
               {mapMode === 'map' && (
                 <button className={largeText ? 'seg seg-text on' : 'seg seg-text'} aria-pressed={largeText} onClick={() => setLargeText((v) => !v)}>
                   Larger text

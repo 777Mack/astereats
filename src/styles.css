@@ -3230,3 +3230,10 @@ tr:last-child td {
   background: var(--gold);
   box-shadow: 0 0 0 2px var(--night);
 }
+
+/* The Sky / Map pair, wrapped on its own so the tour ring circles just these two buttons */
+.view-toggle {
+  display: flex;
+  gap: 8px;
+  border-radius: 999px;
+}

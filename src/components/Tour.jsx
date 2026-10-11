@@ -6,7 +6,7 @@ function useTargetRect(selector, stepKey) {
   const [rect, setRect] = useState(null);
   useEffect(() => {
     let raf = 0;
-    let last = '';
+    let last = null; // null, not '', so a step with no target clears the previous step's ring
     let scrolled = false;
     const t0 = performance.now();
     const loop = () => {
