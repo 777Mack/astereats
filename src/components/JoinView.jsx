@@ -221,7 +221,7 @@ export default function JoinView() {
             {done
               ? 'Welcome aboard. Here is how you would look in the sky.'
               : info
-                ? `${info.label}s show up as ${role === 'farm' ? 'stars' : 'planets'}. Type your name to see yours.`
+                ? `${role === 'farm' ? 'Farms show up as stars' : 'Food pantries show up as planets'}. Type your name to see yours.`
                 : 'Pick who you are to claim your spot.'}
           </p>
         </div>
