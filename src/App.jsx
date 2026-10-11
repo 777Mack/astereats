@@ -28,6 +28,28 @@ function Logo() {
   );
 }
 
+// Icons for the Sky view / Map view buttons. They use the button's text colour.
+function SkyIcon() {
+  return (
+    <svg className="seg-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="11" cy="13" r="5" fill="currentColor" />
+      <ellipse cx="11" cy="13" rx="9" ry="3" fill="none" stroke="currentColor" strokeWidth="1.6" transform="rotate(-20 11 13)" />
+      <path d="M19.5 3.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z" fill="currentColor" />
+    </svg>
+  );
+}
+
+function MapIcon() {
+  return (
+    <svg className="seg-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3 6.5l5.5-2 7 2 5.5-2v13l-5.5 2-7-2-5.5 2z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M8.5 4.5v13M15.5 6.5v13" stroke="currentColor" strokeWidth="1.4" opacity="0.6" />
+      <path d="M12 3.2a3.3 3.3 0 0 0-3.3 3.3c0 2.4 3.3 5.6 3.3 5.6s3.3-3.2 3.3-5.6A3.3 3.3 0 0 0 12 3.2z" fill="currentColor" stroke="var(--seg-bg, #1b0948)" strokeWidth="1.2" />
+      <circle cx="12" cy="6.5" r="1.2" fill="var(--seg-bg, #1b0948)" />
+    </svg>
+  );
+}
+
 export default function App() {
   const [requests, setRequests] = useState(seed);
   const [view, setView] = useState('sky');
@@ -40,6 +62,23 @@ export default function App() {
   const [tour, setTour] = useState(null); // { step, playing } while the guided tour is open
   const [intro, setIntro] = useState(true); // the welcome popup: open on load, reopened by the About button
   const tourBase = useRef(null); // the person's own view settings, restored when the tour ends
+  const [viewKey, setViewKey] = useState(0); // bumped to put the sky / map back to its normal zoom
+  const headerRef = useRef(null);
+  const footRef = useRef(null);
+  // Heights of the floating top bar and footer, so the overlays on the picture sit between them.
+  const [bars, setBars] = useState({ top: 64, foot: 32 });
+
+  useEffect(() => {
+    const top = headerRef.current;
+    const foot = footRef.current;
+    if (!top || !foot) return undefined;
+    const measure = () =>
+      setBars({ top: Math.ceil(top.getBoundingClientRect().height), foot: Math.ceil(foot.getBoundingClientRect().height) });
+    const ro = new ResizeObserver(measure);
+    ro.observe(top);
+    ro.observe(foot);
+    return () => ro.disconnect();
+  }, []);
 
   useEffect(() => {
     document.title = `${APP_NAME} · ${TAGLINE}`;
@@ -142,6 +181,7 @@ export default function App() {
     setSelectedFarmId(null);
     setHoverFarmId(null);
     setView('sky');
+    setViewKey((k) => k + 1);
   };
 
   // ---- Guided tour: every step rebuilds the demo state from the start, so Back, Next and auto-play agree ----
@@ -154,6 +194,7 @@ export default function App() {
     setHoverFarmId(null);
     setSelectedFarmId(st.farm ?? null);
     setModal(null);
+    setViewKey((k) => k + 1);
   };
   const tourGo = (i) => {
     const n = Math.max(0, Math.min(TOUR_STEPS.length - 1, i));
@@ -187,9 +228,48 @@ export default function App() {
     setView('sky');
   };
 
+  const details = selectedFarm ? (
+    <FarmPanel
+      farm={selectedFarm}
+      pantry={selectedPantry}
+      request={selectedRequest}
+      evaluation={farmEvaluation}
+      farmRequests={farmRequests}
+      pantryById={pantryById}
+      onChoose={choose}
+      onClose={() => setSelectedFarmId(null)}
+    />
+  ) : (
+    <SidePanel
+      pantry={selectedPantry}
+      request={selectedRequest}
+      farms={farms}
+      ranking={ranking}
+      onChoose={choose}
+      onPledge={pledge}
+      onConfirm={confirmDelivery}
+      onHoverFarm={setHoverFarmId}
+      onNewRequest={(pantryId) => setModal({ pantryId })}
+    />
+  );
+
+  // Sky and Map view fill the screen: the see-through top bar floats over the picture and
+  // details open in a side bar on demand.
+  const fullView = view === 'sky';
+  const mapFull = fullView && mapMode === 'map';
+  const sidebarOpen = !!(selectedPantryId || selectedFarmId);
+  const closeSidebar = () => {
+    setSelectedPantryId(null);
+    setSelectedFarmId(null);
+    setHoverFarmId(null);
+  };
+
   return (
-    <div className={tour ? 'app has-tour' : 'app'}>
-      <header className="topbar">
+    <div
+      className={`app${tour ? ' has-tour' : ''}${fullView ? ' full-view' : ''}${mapFull ? ' map-full' : ''}`}
+      style={{ '--topbar-h': `${bars.top}px`, '--foot-h': `${bars.foot}px` }}
+    >
+      <header className="topbar" ref={headerRef}>
         <div className="brand">
           <Logo />
           <div>
@@ -261,13 +341,17 @@ export default function App() {
               onSelectFarm={selectFarm}
               mode={mapMode}
               largeText={largeText}
+              viewKey={viewKey}
             />
             <div className="view-controls" role="group" aria-label="Picture style" data-tour="views">
-              <button className={mapMode === 'sky' ? 'seg on' : 'seg'} aria-pressed={mapMode === 'sky'} onClick={() => setMapMode('sky')}>
-                Sky view
+              <button className={mapMode === 'sky' ? 'seg seg-icon-btn on' : 'seg seg-icon-btn'} aria-pressed={mapMode === 'sky'} aria-label="Sky view" title="Sky view" onClick={() => setMapMode('sky')}>
+                <SkyIcon />
               </button>
-              <button className={mapMode === 'map' ? 'seg on' : 'seg'} aria-pressed={mapMode === 'map'} onClick={() => setMapMode('map')}>
-                Map view
+              <button className={mapMode === 'map' ? 'seg seg-icon-btn on' : 'seg seg-icon-btn'} aria-pressed={mapMode === 'map'} aria-label="Map view" title="Map view" onClick={() => {
+                  setMapMode('map');
+                  closeSidebar();
+                }}>
+                <MapIcon />
               </button>
               {mapMode === 'map' && (
                 <button className={largeText ? 'seg seg-text on' : 'seg seg-text'} aria-pressed={largeText} onClick={() => setLargeText((v) => !v)}>
@@ -275,6 +359,7 @@ export default function App() {
                 </button>
               )}
             </div>
+            <div className="map-overlay-bl">
             {mapMode === 'map' && (
               <ul className="map-legend" aria-label="Map key">
                 <li>
@@ -292,8 +377,8 @@ export default function App() {
                 </li>
                 <li>
                   <svg viewBox="-14 -8 28 16" aria-hidden="true">
-                    <line x1="-12" y1="0" x2="12" y2="0" stroke="#2E1069" strokeWidth="8" strokeLinecap="round" />
-                    <line x1="-12" y1="0" x2="12" y2="0" stroke="#F2B90C" strokeWidth="4.5" strokeLinecap="round" />
+                    <line x1="-12" y1="0" x2="12" y2="0" stroke="#E0A22B" strokeWidth="8" strokeLinecap="round" />
+                    <line x1="-12" y1="0" x2="12" y2="0" stroke="#FCD26A" strokeWidth="5" strokeLinecap="round" />
                   </svg>
                   Interstate highway
                 </li>
@@ -311,30 +396,21 @@ export default function App() {
                 ? 'Simplified map: highways and cities are approximate. Distances are to scale, straight-line estimates.'
                 : 'Planets are pantries, stars are farms. Distances are to scale. Straight-line estimates.'}
             </p>
+            </div>
           </div>
-          {selectedFarm ? (
-            <FarmPanel
-              farm={selectedFarm}
-              pantry={selectedPantry}
-              request={selectedRequest}
-              evaluation={farmEvaluation}
-              farmRequests={farmRequests}
-              pantryById={pantryById}
-              onChoose={choose}
-              onClose={() => setSelectedFarmId(null)}
-            />
+          {fullView ? (
+            sidebarOpen && (
+              <div className="map-sidebar">
+                <div className="map-sidebar-bar">
+                  <button className="btn btn-ghost btn-sm" onClick={closeSidebar} aria-label="Close details">
+                    Close ✕
+                  </button>
+                </div>
+                {details}
+              </div>
+            )
           ) : (
-          <SidePanel
-            pantry={selectedPantry}
-            request={selectedRequest}
-            farms={farms}
-            ranking={ranking}
-            onChoose={choose}
-            onPledge={pledge}
-            onConfirm={confirmDelivery}
-            onHoverFarm={setHoverFarmId}
-            onNewRequest={(pantryId) => setModal({ pantryId })}
-          />
+            details
           )}
         </main>
       ) : view === 'impact' ? (
@@ -355,7 +431,7 @@ export default function App() {
         </main>
       )}
 
-      <footer className="foot">
+      <footer className="foot" ref={footRef}>
         All pantries, farms, pledges and deliveries are sample data. No real payments are taken, and nothing here claims a
         partnership with any organization.
       </footer>

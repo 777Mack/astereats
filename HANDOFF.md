@@ -51,6 +51,8 @@ Guided tour: **Take the tour** in the top bar runs an 11-step walkthrough (need,
 
 Map view: a **Sky view / Map view** toggle above the picture. Map view shows a simplified road map (gold interstates, real city names, scale bar, key) with pantries as house pins and farms as stars, for people who find the sky hard to read. **Larger text** scales every label. The highway lines are hand-drawn and only roughly accurate (`src/data/basemap.js`); cities are accurate. Do not present it as survey-accurate. Labels are placed automatically beside their pins (`SkyMap.jsx`, `BaseMap.jsx`) so they don't collide.
 
+Full screen, zoom and pan: Sky and Map view fill the window. The top bar is see-through and floats over the picture, and pantry or farm details open in a side bar (bottom sheet on phones) only when something is selected. Drag to pan, scroll or pinch to zoom, or use the +, - and reset buttons (bottom right, with a compass and a live scale bar). The pan/zoom logic is `src/lib/panZoom.js`; it moves the SVG viewBox, and a drag never counts as a click. The header and footer heights are measured in `App.jsx` (`--topbar-h`, `--foot-h`) so overlays never tuck under them.
+
 Animations (all switched off automatically if the system asks for reduced motion): rings fill on load, pledge sparkles and a floating "+$10", shockwave rings when funded, a comet between planet and farm on match and delivery, a celebration burst, glowing delivered planets, pulsing open requests, count-up numbers, panel cards sliding in, occasional shooting stars.
 
 ## 4. How it works
@@ -80,7 +82,7 @@ src/
     MoneyView.jsx          the Money tab (where pledges go, farm price terms)
     JoinView.jsx           the Join tab (demo registration form)
     IntroModal.jsx         the welcome popup shown on load (and from About)
-  lib/ match.js geo.js parseRequest.js categories.js motion.js tourSteps.js
+  lib/ match.js geo.js parseRequest.js categories.js motion.js tourSteps.js panZoom.js
   data/sample.json         all sample data
   data/basemap.js          hand-drawn highways and city points for Map view
 scripts/check-match.mjs    17 checks for matching and the reader

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { makeProjector } from '../lib/geo.js';
 import { labelFor, shortFor } from '../lib/categories.js';
 import { prefersReducedMotion } from '../lib/motion.js';
+import { usePanZoom } from '../lib/panZoom.js';
 import BaseMap from './BaseMap.jsx';
 
 const W = 1000;
@@ -125,6 +126,7 @@ export default function SkyMap({
   onSelectFarm = () => {},
   mode = 'sky',
   largeText = false,
+  viewKey = 0,
 }) {
   const isMap = mode === 'map';
   const ms = isMap && largeText ? 1.3 : 1; // label size multiplier in map view
@@ -134,6 +136,8 @@ export default function SkyMap({
     const el = scrollRef.current;
     if (el && el.scrollWidth > el.clientWidth) el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2;
   }, []);
+
+  const pz = usePanZoom(W, H, viewKey);
 
   // "Power up" on first show: stardust rings fill from empty. Skipped with reduced motion.
   const [booted, setBooted] = useState(prefersReducedMotion());
@@ -282,13 +286,34 @@ export default function SkyMap({
 
   const backdrop = useMemo(() => {
     const rnd = mulberry32(7);
-    return Array.from({ length: 150 }, () => ({
+    const core = Array.from({ length: 150 }, () => ({
       x: rnd() * W,
       y: rnd() * H,
       r: 0.5 + rnd() * 1.3,
       o: 0.25 + rnd() * 0.55,
     }));
+    // A wider field outside the main picture, seen when zoomed out or panned to the edge.
+    const rnd2 = mulberry32(11);
+    const outer = [];
+    while (outer.length < 900) {
+      const x = -1.5 * W + rnd2() * 4 * W;
+      const y = -1.5 * H + rnd2() * 4 * H;
+      const r = 0.5 + rnd2() * 1.3;
+      const o = 0.25 + rnd2() * 0.55;
+      if (x < 0 || x > W || y < 0 || y > H) outer.push({ x, y, r, o });
+    }
+    return [...core, ...outer];
   }, []);
+
+  // Scale bar: a round number of miles that draws 60 to 140 pixels long at the current zoom.
+  const unitsPerMile = useMemo(() => {
+    const lat = 33.75;
+    const a = project({ lat, lng: -84.4 });
+    const b = project({ lat, lng: -84.4 + 1 / (69.172 * Math.cos((lat * Math.PI) / 180)) });
+    return Math.abs(b.x - a.x);
+  }, [project]);
+  const pxPerMile = unitsPerMile * pz.pxPerUnit;
+  const scaleMiles = [0.5, 1, 2, 5, 10, 20, 50].find((m) => m * pxPerMile >= 60) ?? 50;
 
   const evByFarm = useMemo(
     () => (ranking ? Object.fromEntries(ranking.map((e) => [e.farm.id, e])) : {}),
@@ -331,16 +356,20 @@ export default function SkyMap({
   }
 
   return (
+    <>
     <div className="sky-scroll" ref={scrollRef}>
     <svg
-      className={`sky${isMap ? ' map-mode' : ''}`}
+      ref={pz.svgRef}
+      className={`sky${isMap ? ' map-mode' : ''}${pz.panning ? ' is-panning' : ''}`}
       style={{ '--ms': ms }}
-      viewBox={`0 0 ${W} ${H}`}
+      viewBox={`${pz.vb.x} ${pz.vb.y} ${pz.vb.w} ${pz.vb.h}`}
+      {...pz.handlers}
       role="group"
       aria-label={isMap ? 'Road map of pantries and farms' : 'Sky map of pantries and farms'}
     >
       <defs>
-        <radialGradient id="skyBg" cx="50%" cy="45%" r="75%">
+        {/* In drawing units, so the glow stays put and fades evenly into the night when zoomed out */}
+        <radialGradient id="skyBg" gradientUnits="userSpaceOnUse" cx={W / 2} cy={H * 0.45} r={700}>
           <stop offset="0%" stopColor="#2E1069" />
           <stop offset="100%" stopColor="#1B0948" />
         </radialGradient>
@@ -371,7 +400,8 @@ export default function SkyMap({
         <BaseMap project={project} W={W} H={H} ms={ms} obstacles={obstacles} />
       ) : (
         <>
-          <rect width={W} height={H} fill="url(#skyBg)" />
+          {/* Oversized so the night sky also fills the space seen when zoomed out */}
+          <rect x={-2500} y={-2500} width={W + 5000} height={H + 5000} fill="url(#skyBg)" />
           {backdrop.map((s, i) => (
             <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="#F6F1FF" opacity={s.o} />
           ))}
@@ -629,5 +659,33 @@ export default function SkyMap({
       </g>
     </svg>
     </div>
+
+    {/* Zoom controls, compass and scale bar sit on top of the picture, outside the zoomable drawing */}
+    <div className="zoom-controls" role="group" aria-label="Zoom">
+      <span className="compass" title="North is up" aria-hidden="true">
+        <svg viewBox="-12 -12 24 24">
+          <polygon points="0,-9 4,3 0,0 -4,3" />
+          <text x="0" y="10" textAnchor="middle">
+            N
+          </text>
+        </svg>
+      </span>
+      <button className="zoom-btn" onClick={pz.zoomIn} disabled={!pz.canZoomIn} aria-label="Zoom in" title="Zoom in">
+        +
+      </button>
+      <button className="zoom-btn" onClick={pz.zoomOut} disabled={!pz.canZoomOut} aria-label="Zoom out" title="Zoom out">
+        −
+      </button>
+      <button className="zoom-btn zoom-home" onClick={pz.reset} aria-label="Reset view" title="Reset view">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      </button>
+    </div>
+    <div className="scale-bar" aria-label={`Scale: ${scaleMiles} miles`}>
+      <span className="scale-line" style={{ width: `${Math.round(scaleMiles * pxPerMile)}px` }} />
+      <span>{scaleMiles} {scaleMiles === 1 ? 'mile' : 'miles'}</span>
+    </div>
+    </>
   );
 }

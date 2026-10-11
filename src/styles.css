@@ -216,6 +216,18 @@ textarea {
   font-size: 13px;
   fill: var(--ink-dim);
 }
+/* The order amount ("100 lbs greens") only shows while a planet is hovered or focused.
+   It stays visible during the guided tour so the steps still make sense. */
+.planet .sky-label-sub {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+.planet:hover .sky-label-sub,
+.planet:focus-visible .sky-label-sub,
+.has-tour .planet .sky-label-sub {
+  opacity: 1;
+}
 .sky-label-farm {
   font-size: 12.5px;
   fill: var(--gold);
@@ -741,16 +753,65 @@ tr:last-child td {
 .seg.on {
   background: var(--gold);
   color: var(--night);
+  --seg-bg: var(--gold);
+}
+.is-map .view-controls .seg {
+  --seg-bg: #fff;
+}
+.is-map .view-controls .seg.on {
+  --seg-bg: var(--plum);
 }
 .seg-text {
   margin-left: 6px;
   border: 1px solid var(--lavender);
 }
 .sky-wrap.is-map {
-  background: #f3eefa;
+  background: #efece4;
 }
 .is-map .sky {
   height: calc(100vh - 118px - 82px);
+}
+/* Sky / Map view: icon-only buttons with no frame around them */
+.view-controls {
+  padding: 0;
+  gap: 8px;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+.seg-icon-btn {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  justify-content: center;
+}
+.seg-icon-btn .seg-icon {
+  width: 26px;
+  height: 26px;
+}
+/* Icons inside the Sky / Map view buttons */
+.seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.seg-icon {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+.is-map .view-controls .seg {
+  color: #3c4043;
+}
+.is-map .view-controls .seg:hover:not(.on) {
+  background: #f1f3f4;
+}
+.is-map .view-controls .seg.on {
+  background: var(--plum);
+  color: #fff;
+}
+.is-map .view-controls .seg-text {
+  border-color: #dadce0;
 }
 /* Key under the map, in normal flow so it never covers a town */
 .map-legend {
@@ -809,7 +870,7 @@ tr:last-child td {
 .map-shield,
 .map-scale {
   font-family: inherit;
-  fill: var(--plum);
+  fill: #3c4043;
   paint-order: stroke;
   stroke: #fff;
   stroke-width: 4px;
@@ -817,12 +878,12 @@ tr:last-child td {
   pointer-events: none;
 }
 .map-city {
-  font-size: calc(18px * var(--ms, 1));
-  font-weight: 650;
+  font-size: calc(17px * var(--ms, 1));
+  font-weight: 500;
 }
 .map-city-big {
-  font-size: calc(26px * var(--ms, 1));
-  font-weight: 800;
+  font-size: calc(25px * var(--ms, 1));
+  font-weight: 600;
 }
 .map-shield {
   font-size: calc(14px * var(--ms, 1));
@@ -1714,4 +1775,333 @@ tr:last-child td {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+/* ---------- Full-screen Sky and Map view ---------- */
+/* The picture fills the window. The top bar is see-through and floats over it, and the
+   pantry / farm details slide in as a side bar only when something is selected.
+   --topbar-h is the bar's measured height (set in App.jsx), so nothing tucks under it when it wraps. */
+.app.full-view {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+.full-view .stage {
+  position: absolute;
+  inset: 0;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+}
+.full-view .sky-wrap {
+  overflow: hidden;
+}
+.full-view .sky-wrap,
+.full-view .sky-scroll {
+  height: 100%;
+}
+.full-view .sky-scroll {
+  overflow: hidden;
+}
+.full-view .sky,
+.full-view.app .is-map .sky {
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  aspect-ratio: auto;
+}
+.sky {
+  touch-action: none; /* the picture handles its own drag and pinch */
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.sky.is-panning {
+  cursor: grabbing;
+}
+.full-view .topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 8;
+  background: transparent;
+  border-bottom: 0;
+  pointer-events: none; /* clicks fall through to the picture; the controls below opt back in */
+}
+.full-view .topbar .brand,
+.full-view .topbar .tabs,
+.full-view .topbar .top-actions > * {
+  pointer-events: auto;
+}
+/* Sky: dark see-through pills */
+.full-view .tabs,
+.full-view .topbar .btn-ghost,
+.full-view .sample-badge {
+  background: rgba(27, 9, 72, 0.55);
+  backdrop-filter: blur(6px);
+}
+.full-view .topbar .btn-ghost:hover:not(:disabled) {
+  background: rgba(46, 16, 105, 0.85);
+}
+.full-view .brand h1,
+.full-view .tagline {
+  text-shadow: 0 1px 4px rgba(14, 4, 40, 0.8);
+}
+/* Map: light see-through pills and dark text */
+.map-full .brand h1 {
+  color: var(--plum);
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9);
+}
+.map-full .tagline {
+  color: #3b2486;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9);
+}
+.map-full .tabs {
+  background: rgba(255, 255, 255, 0.72);
+}
+.map-full .tab {
+  color: #3b2486;
+}
+.map-full .tab.on {
+  color: var(--night);
+}
+.map-full .topbar .btn-ghost,
+.map-full .sample-badge {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: var(--plum);
+  color: var(--plum);
+}
+.map-full .topbar .btn-ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.95);
+}
+.full-view .view-controls {
+  top: calc(var(--topbar-h, 64px) + 6px);
+  z-index: 3;
+}
+.map-overlay-bl {
+  display: contents;
+}
+.full-view .map-overlay-bl {
+  position: absolute;
+  left: 14px;
+  bottom: calc(var(--foot-h, 32px) + 10px);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: min(360px, calc(100% - 28px));
+  pointer-events: none;
+}
+.full-view .map-note {
+  position: static;
+  border-radius: 12px;
+  padding: 6px 12px;
+  backdrop-filter: blur(6px);
+  font-size: 0.8rem;
+}
+.map-full .map-legend {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 6px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 1px 6px rgba(60, 64, 67, 0.3);
+  font-size: 0.9rem;
+}
+.map-full .map-note {
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 1px 6px rgba(60, 64, 67, 0.3);
+}
+.full-view .foot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+  background: rgba(27, 9, 72, 0.6);
+  backdrop-filter: blur(6px);
+  border-top: 0;
+  padding: 6px 16px;
+}
+.map-full .foot {
+  background: rgba(255, 255, 255, 0.72);
+  color: #3b2486;
+}
+
+/* Zoom buttons, compass and scale bar (bottom right of the picture) */
+.zoom-controls {
+  position: absolute;
+  right: 14px;
+  bottom: calc(var(--foot-h, 32px) + 10px);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.zoom-btn,
+.compass {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(27, 9, 72, 0.75);
+  backdrop-filter: blur(6px);
+  color: var(--ink);
+  font-size: 1.4rem;
+  line-height: 1;
+  font-weight: 600;
+}
+.zoom-btn {
+  cursor: pointer;
+}
+.zoom-btn:hover:not(:disabled) {
+  background: rgba(46, 16, 105, 0.95);
+}
+.zoom-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.zoom-btn svg {
+  width: 20px;
+  height: 20px;
+}
+.compass {
+  border-radius: 50%;
+}
+.compass svg {
+  width: 30px;
+  height: 30px;
+}
+.compass polygon {
+  fill: var(--gold);
+}
+.compass text {
+  font-size: 7px;
+  font-weight: 800;
+  fill: var(--ink);
+}
+.scale-bar {
+  position: absolute;
+  right: 66px;
+  bottom: calc(var(--foot-h, 32px) + 10px);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(27, 9, 72, 0.6);
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: var(--ink);
+  pointer-events: none;
+}
+.scale-line {
+  display: block;
+  height: 6px;
+  border: 2px solid currentColor;
+  border-top: 0;
+}
+.is-map .zoom-btn,
+.is-map .compass {
+  background: #fff;
+  border-color: #dadce0;
+  color: #3c4043;
+  box-shadow: 0 1px 4px rgba(60, 64, 67, 0.3);
+}
+.is-map .zoom-btn:hover:not(:disabled) {
+  background: #f1f3f4;
+}
+.is-map .compass polygon {
+  fill: #d93025;
+}
+.is-map .compass text {
+  fill: #3c4043;
+}
+.is-map .scale-bar {
+  background: rgba(255, 255, 255, 0.85);
+  color: #3c4043;
+}
+
+/* The details side bar */
+.map-sidebar {
+  position: absolute;
+  top: calc(var(--topbar-h, 64px) + 6px);
+  right: 14px;
+  bottom: calc(var(--foot-h, 32px) + 8px);
+  width: min(400px, calc(100% - 28px));
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  background: rgba(39, 16, 95, 0.86);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(14, 4, 40, 0.45);
+  overflow: hidden;
+  animation: rise 0.25s ease-out both;
+}
+.map-sidebar-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 10px 0;
+}
+.map-sidebar .panel {
+  background: transparent;
+  border: 0;
+  max-height: none;
+  flex: 1;
+  min-height: 0;
+}
+/* While the side bar is open, the zoom controls move left of it */
+.full-view .stage:has(.map-sidebar) .zoom-controls {
+  right: calc(min(400px, 100% - 28px) + 28px);
+}
+.full-view .stage:has(.map-sidebar) .scale-bar {
+  right: calc(min(400px, 100% - 28px) + 80px);
+}
+@media (max-width: 900px) {
+  /* On a phone the side bar becomes a sheet from the bottom */
+  .map-sidebar {
+    top: auto;
+    left: 14px;
+    bottom: calc(var(--foot-h, 32px) + 6px);
+    max-height: 58vh;
+    width: auto;
+  }
+  .full-view .stage:has(.map-sidebar) .zoom-controls,
+  .full-view .stage:has(.map-sidebar) .scale-bar,
+  .full-view .map-overlay-bl {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  /* Keep the floating top bar short on phones: no tagline, and the tabs scroll sideways */
+  .full-view .tagline {
+    display: none;
+  }
+  .tabs {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tab {
+    flex: none;
+    padding: 6px 14px;
+  }
+  .full-view .topbar {
+    gap: 8px;
+  }
+  .top-actions {
+    gap: 6px;
+  }
 }

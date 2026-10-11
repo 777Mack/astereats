@@ -1,12 +1,21 @@
 import { useMemo } from 'react';
-import { CITIES, ROADS } from '../data/basemap.js';
+import { CITIES, PARKS, ROADS } from '../data/basemap.js';
 
-// The "paper map" layer behind the pins: land, highways, highway signs, city names,
-// a scale bar and a north arrow. Pure drawing, no interaction.
+// The street-map layer behind the pins, styled in the spirit of a familiar web map:
+// warm grey land, amber interstates, white highways, soft green parks, blue road signs,
+// grey city names. Pure drawing, no interaction. (The compass and scale bar are on-screen controls in SkyMap.)
 
-const LAND = '#f3eefa';
-const EDGE = '#2e1069';
-const GOLD = '#f2b90c';
+export const MAP_COLORS = {
+  land: '#efece4',
+  street: '#ffffff',
+  interstate: '#fcd26a',
+  interstateEdge: '#e0a22b',
+  highwayEdge: '#cbc5b8',
+  park: '#cfe6c4',
+  sign: '#2f6fb5',
+  ink: '#3c4043',
+};
+const C = MAP_COLORS;
 
 // Smooth line through the points (Catmull-Rom turned into Bezier curves).
 function smoothPath(pts, closed) {
@@ -105,7 +114,7 @@ export default function BaseMap({ project, W, H, ms, obstacles }) {
         if (box.x0 < 8 || box.x1 > W - 8 || box.y0 < 8 || box.y1 > H - 8) continue;
         if (blockers.some((o) => overlaps(box, o))) continue;
         if (out.some((q) => overlaps(box, q.box))) continue;
-        out.push({ key: `${r.id}-${lat}-${lng}`, label: r.label, x: p.x, y: p.y, w, h, box });
+        out.push({ key: `${r.id}-${lat}-${lng}`, label: r.label, kind: r.kind, x: p.x, y: p.y, w, h, box });
       }
     }
     return out;
@@ -126,32 +135,52 @@ export default function BaseMap({ project, W, H, ms, obstacles }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project, W, H, ms, obstacles, shields, bigCities]);
 
-  // Scale bar: how many pixels are 5 miles?
+  // Drawing units per mile, so parks stay to scale.
   const ppm = useMemo(() => {
     const lat = 33.75;
     const a = project({ lat, lng: -84.4 });
     const b = project({ lat, lng: -84.4 + 1 / (69.172 * Math.cos((lat * Math.PI) / 180)) });
     return Math.abs(b.x - a.x);
   }, [project]);
-  const barLen = ppm * 5;
+
+  // Parks: drawn as soft rounded patches, sized in miles so they stay to scale.
+  const parks = useMemo(
+    () =>
+      PARKS.map(([name, lat, lng, wMi, hMi]) => {
+        const p = project({ lat, lng });
+        return { name, x: p.x, y: p.y, w: wMi * ppm, h: hMi * ppm };
+      }),
+    [project, ppm],
+  );
 
   return (
     <g aria-hidden="true">
-      <rect width={W} height={H} fill={LAND} />
+      <defs>
+        <pattern id="map-streets" width="52" height="52" patternUnits="userSpaceOnUse" patternTransform="rotate(-18)">
+          <path d="M0,13 H52 M0,39 H52 M17,0 V52 M43,0 V52" stroke={C.street} strokeWidth="2.4" fill="none" />
+        </pattern>
+      </defs>
+      {/* Oversized so the land fills a wide screen beyond the 1000 x 720 drawing area */}
+      <rect x={-2500} y={-2500} width={W + 5000} height={H + 5000} fill={C.land} />
+      <rect x={-2500} y={-2500} width={W + 5000} height={H + 5000} fill="url(#map-streets)" opacity="0.65" />
 
-      {/* Roads: dark edge first, then the coloured centre, so crossings join cleanly */}
+      {parks.map((k) => (
+        <rect key={k.name} x={k.x - k.w / 2} y={k.y - k.h / 2} width={k.w} height={k.h} rx={Math.min(k.w, k.h) / 2.4} fill={C.park} />
+      ))}
+
+      {/* Roads: soft edge first, then the coloured centre, so crossings join cleanly */}
       <g fill="none" strokeLinecap="round" strokeLinejoin="round">
         {roads.map((r) => (
-          <path key={`${r.id}-edge`} d={r.d} stroke={EDGE} strokeWidth={r.kind === 'interstate' ? 11 : 8.5} />
+          <path key={`${r.id}-edge`} d={r.d} stroke={r.kind === 'interstate' ? C.interstateEdge : C.highwayEdge} strokeWidth={r.kind === 'interstate' ? 10 : 8} />
         ))}
         {roads.map((r) => (
-          <path key={`${r.id}-fill`} d={r.d} stroke={r.kind === 'interstate' ? GOLD : '#ffffff'} strokeWidth={r.kind === 'interstate' ? 7 : 5} />
+          <path key={`${r.id}-fill`} d={r.d} stroke={r.kind === 'interstate' ? C.interstate : C.street} strokeWidth={r.kind === 'interstate' ? 7 : 5.5} />
         ))}
       </g>
 
       {shields.map((s) => (
         <g key={s.key}>
-          <rect x={s.x - s.w / 2} y={s.y - s.h / 2} width={s.w} height={s.h} rx={6 * ms} fill={EDGE} stroke="#ffffff" strokeWidth="1.5" />
+          <rect x={s.x - s.w / 2} y={s.y - s.h / 2} width={s.w} height={s.h} rx={6 * ms} fill={s.kind === 'interstate' ? C.sign : C.ink} stroke="#ffffff" strokeWidth="2" />
           <text className="map-shield" x={s.x} y={s.y + 5 * ms} textAnchor="middle">
             {s.label}
           </text>
@@ -160,33 +189,14 @@ export default function BaseMap({ project, W, H, ms, obstacles }) {
 
       {cities.map((c) => (
         <g key={c.name}>
-          {c.leader && <line x1={c.p.x} y1={c.p.y} x2={c.x} y2={c.y - c.size * 0.3} stroke={EDGE} strokeWidth="2" />}
-          <circle cx={c.p.x} cy={c.p.y} r={c.rank === 1 ? 6 : 4.5} fill={EDGE} stroke="#ffffff" strokeWidth="2" />
+          {c.leader && <line x1={c.p.x} y1={c.p.y} x2={c.x} y2={c.y - c.size * 0.3} stroke={C.ink} strokeWidth="1.5" />}
+          <circle cx={c.p.x} cy={c.p.y} r={c.rank === 1 ? 5 : 3.5} fill="#5f6368" stroke="#ffffff" strokeWidth="2" />
           <text className={c.rank === 1 ? 'map-city map-city-big' : 'map-city'} x={c.x} y={c.y} textAnchor={c.anchor}>
             {c.name}
           </text>
         </g>
       ))}
 
-      {/* Scale bar */}
-      <g transform={`translate(40 ${H - 64})`}>
-        <rect x="-10" y="-22" width={Math.max(barLen, 62) + 20} height="42" rx="8" fill="#ffffff" fillOpacity="0.9" />
-        <line x1="0" y1="0" x2={barLen} y2="0" stroke={EDGE} strokeWidth="4" strokeLinecap="butt" />
-        <line x1="0" y1="-7" x2="0" y2="7" stroke={EDGE} strokeWidth="3" />
-        <line x1={barLen} y1="-7" x2={barLen} y2="7" stroke={EDGE} strokeWidth="3" />
-        <text className="map-scale" x={barLen / 2} y="15" textAnchor="middle">
-          5 miles
-        </text>
-      </g>
-
-      {/* North arrow */}
-      <g transform={`translate(${W - 52} 58)`}>
-        <circle r="26" fill="#ffffff" fillOpacity="0.9" stroke={EDGE} strokeWidth="2" />
-        <polygon points="0,-17 7,6 0,1 -7,6" fill={EDGE} />
-        <text className="map-scale" x="0" y="21" textAnchor="middle" fontSize="13">
-          N
-        </text>
-      </g>
     </g>
   );
 }

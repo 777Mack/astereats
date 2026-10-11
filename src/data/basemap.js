@@ -6,7 +6,7 @@
 // (same {lat,lng} shape), or swap the whole layer for a tile map such as Leaflet + OpenStreetMap
 // (needs an internet connection while presenting).
 //
-// Each road: kind ('interstate' draws gold with a dark edge, 'highway' draws white with a dark edge),
+// Each road: kind ('interstate' draws amber, 'highway' draws white, both with a soft edge),
 // label (text on the road sign), pts ([lat, lng] pairs in order), closed (true for the I-285 loop),
 // shields (candidate [lat, lng] spots for the sign; ones that would cover a pin are skipped).
 
@@ -111,4 +111,13 @@ export const CITIES = [
   ['Atlanta Airport', 33.6407, -84.4277, 3],
   ['Snellville', 33.8573, -84.0199, 3],
   ['Cumming', 34.2073, -84.1402, 2],
+];
+
+// Parks drawn as soft green patches: [name, lat, lng, width in miles, height in miles].
+// Rough size and position, for orientation only. They carry no label.
+export const PARKS = [
+  ['Piedmont Park', 33.7851, -84.3738, 0.8, 1.0],
+  ['Stone Mountain Park', 33.806, -84.145, 4.2, 2.6],
+  ['Kennesaw Mountain', 33.9833, -84.5775, 2.8, 1.8],
+  ['Chastain Park', 33.8795, -84.3925, 1.3, 1.0],
 ];
