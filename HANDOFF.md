@@ -29,7 +29,7 @@ The constellation look came from a teammate's idea for the Creative track, moved
 
 A static React app (Vite) with an SVG sky map, a side panel, an Impact tab and a "New request" form.
 
-Request lifecycle: `open` (needs a match) → `matched` (farm chosen, funding open) → `funded` (pledges reach the goal) → `delivered` (pantry confirms pounds received). Funding milestones: Spark 25%, Glow 50%, Blaze 75%, Funded 100%. There is deliberately no donor leaderboard.
+Request lifecycle: `open` (needs a match) → `matched` (farm chosen, funding open) → `funded` (pledges reach the goal) → `partial` (some pounds confirmed; the planet fills with gold) → `delivered` (every planned pound confirmed, or the pantry closes it short). The ring is funding and the gold fill is confirmed pounds, so a planet is only fully gold when both are complete. Funding milestones: Spark 25%, Glow 50%, Blaze 75%, Funded 100%. There is deliberately no donor leaderboard.
 
 Demo flow (about 3 minutes), also in `README.md`:
 1. Adamsville opens with a matched request: $65 of $100 pledged.

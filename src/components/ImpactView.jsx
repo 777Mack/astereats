@@ -22,7 +22,7 @@ export default function ImpactView({ requests, pantries, farms, onOpen }) {
   const delivered = requests.reduce((s, r) => s + r.deliveredLbs, 0);
   const pledged = requests.reduce((s, r) => s + r.pledged, 0);
   const goals = requests.reduce((s, r) => s + r.goal, 0);
-  const fundedCount = requests.filter((r) => r.status === 'funded' || r.status === 'delivered').length;
+  const fundedCount = requests.filter((r) => ['funded', 'partial', 'delivered'].includes(r.status)).length;
   const deliveredCount = requests.filter((r) => r.status === 'delivered').length;
 
   return (

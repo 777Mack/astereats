@@ -183,9 +183,19 @@ export default function App() {
     });
   };
 
+  // Each pantry confirmation adds to the pounds received. The request is only "delivered" once every planned
+  // pound is confirmed; until then it is "partial" and the planet fills with gold as shipments arrive.
   const confirmDelivery = (lbs) => {
     if (!selectedRequest) return;
-    update(selectedRequest.id, (r) => ({ ...r, status: 'delivered', deliveredLbs: Math.min(lbs, r.lbsPlanned) }));
+    update(selectedRequest.id, (r) => {
+      const deliveredLbs = Math.min(r.lbsPlanned, r.deliveredLbs + lbs);
+      return { ...r, deliveredLbs, status: deliveredLbs >= r.lbsPlanned ? 'delivered' : 'partial' };
+    });
+  };
+  // The farm can't send the rest: close the request at what arrived (the rest of the money would go back to donors).
+  const closeOutDelivery = () => {
+    if (!selectedRequest) return;
+    update(selectedRequest.id, (r) => ({ ...r, status: 'delivered' }));
   };
 
   const addRequest = ({ pantryId, category, lbsNeeded, deadlineHours }) => {
@@ -288,6 +298,7 @@ export default function App() {
       onChoose={choose}
       onPledge={pledge}
       onConfirm={confirmDelivery}
+      onCloseOut={closeOutDelivery}
       onHoverFarm={setHoverFarmId}
       onNewRequest={(pantryId) => setModal({ pantryId })}
     />
@@ -440,12 +451,23 @@ export default function App() {
                   </svg>
                   Ring = funding progress
                 </li>
+                <li>
+                  <svg viewBox="-12 -12 24 24" aria-hidden="true">
+                    <clipPath id="legend-fill">
+                      <circle r="9" />
+                    </clipPath>
+                    <circle r="9" fill="#2E1069" />
+                    <rect x="-9" y="0" width="18" height="9" fill="#F2B90C" clipPath="url(#legend-fill)" />
+                    <circle r="9" fill="none" stroke="#2E1069" strokeWidth="2" />
+                  </svg>
+                  Gold fill = pounds delivered
+                </li>
               </ul>
             )}
             <p className="map-note">
               {mapMode === 'map'
                 ? 'Simplified map: highways and cities are approximate. Distances are to scale, straight-line estimates.'
-                : 'Planets are pantries, stars are farms. Distances are to scale. Straight-line estimates.'}
+                : 'Planets are pantries, stars are farms. Ring = funding, gold fill = pounds delivered. Straight-line distances.'}
             </p>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { makeProjector } from '../lib/geo.js';
 import { labelFor, shortFor } from '../lib/categories.js';
 import { prefersReducedMotion } from '../lib/motion.js';
 import { usePanZoom } from '../lib/panZoom.js';
+import { PLANET_COLORS, planetColor, starColor } from '../lib/colors.js';
 import BaseMap from './BaseMap.jsx';
 
 const W = 1000;
@@ -17,6 +18,13 @@ function mulberry32(a) {
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
+}
+
+// Hover caption under a planet: what it needs, or how much of the shipment has arrived.
+function captionFor(req) {
+  if (!req) return 'No open request';
+  if (req.status === 'partial') return `${req.deliveredLbs} of ${req.lbsPlanned} lbs arrived`;
+  return `${req.lbsNeeded} lbs ${shortFor(req.category)}`;
 }
 
 function starPoints(cx, cy, r) {
@@ -229,7 +237,7 @@ export default function SkyMap({
       const pos = pPos[p.id];
       const req = latestByPantry[p.id];
       const ringR = (req ? 14 + Math.sqrt(req.lbsNeeded) * 1.3 : 13) + 7;
-      const caption = req ? `${req.lbsNeeded} lbs ${shortFor(req.category)}` : 'No open request';
+      const caption = captionFor(req);
       pins.push({ ...circle(pos, ringR + 8), kind: 'pin', id: p.id });
       return { p, pos, ringR, caption };
     });
@@ -378,6 +386,14 @@ export default function SkyMap({
           <stop offset="55%" stopColor="#9B75DB" />
           <stop offset="100%" stopColor="#272F8B" />
         </radialGradient>
+        {/* One gradient per planet colour a pantry can choose */}
+        {Object.entries(PLANET_COLORS).map(([key, c]) => (
+          <radialGradient key={key} id={`planet-${key}`} cx="35%" cy="30%" r="80%">
+            <stop offset="0%" stopColor={c.light} />
+            <stop offset="55%" stopColor={c.base} />
+            <stop offset="100%" stopColor={c.dark} />
+          </radialGradient>
+        ))}
         <radialGradient id="planetDone" cx="35%" cy="30%" r="80%">
           <stop offset="0%" stopColor="#FFE58A" />
           <stop offset="55%" stopColor="#F2B90C" />
@@ -452,6 +468,7 @@ export default function SkyMap({
           else state = picked ? 'base' : 'dim'; // a farm the person clicked stays bright
         }
         const stockLbs = ev?.stock?.lbs ?? 0;
+        const sc = starColor(f.color);
         const r =
           state === 'base'
             ? 9
@@ -495,11 +512,13 @@ export default function SkyMap({
               />
             )}
             {(state === 'matched' || hot) && (
-              <circle cx={pos.x} cy={pos.y} r={r + 9} fill="#F2B90C" opacity={isMap ? 0.45 : 0.22} />
+              <circle cx={pos.x} cy={pos.y} r={r + 9} fill={sc.fill} opacity={isMap ? 0.45 : 0.22} />
             )}
+            {/* Map view: a soft glow behind each star so the map keeps a little of the night sky */}
+            {isMap && state !== 'dim' && <circle className="map-star-glow" cx={pos.x} cy={pos.y} r={r + 10} fill={sc.fill} />}
             <polygon
               points={starPoints(pos.x, pos.y, isMap ? r + 3 : r)}
-              fill={isMap ? (state === 'dim' ? '#E3D8F7' : '#F2B90C') : state === 'dim' ? '#9B75DB' : '#F2B90C'}
+              fill={isMap ? (state === 'dim' ? '#E3D8F7' : sc.fill) : state === 'dim' ? '#9B75DB' : sc.fill}
               stroke={isMap ? (state === 'dim' ? '#7A55C4' : '#2E1069') : undefined}
               strokeWidth={isMap ? 2 : undefined}
               strokeLinejoin="round"
@@ -530,10 +549,22 @@ export default function SkyMap({
         const ringR = r + 7;
         const C = 2 * Math.PI * ringR;
         const frac = booted && req && req.goal > 0 ? Math.min(1, req.pledged / req.goal) : 0;
-        const delivered = req?.status === 'delivered';
-        const caption = req ? `${req.lbsNeeded} lbs ${shortFor(req.category)}` : 'No open request';
+        // Two separate signals: the ring is funding, the gold fill inside is pounds the pantry confirmed.
+        // The planet only turns fully gold (with a glow and a check) when the whole shipment arrived.
+        const shipFrac = req && req.lbsPlanned > 0 ? Math.min(1, req.deliveredLbs / req.lbsPlanned) : 0;
+        const closed = req?.status === 'delivered';
+        const delivered = closed && shipFrac >= 1;
+        const filling = !!req && req.deliveredLbs > 0 && !delivered;
+        const pc = planetColor(p.color);
+        const caption = captionFor(req);
         const aria = req
-          ? `${p.name}: needs ${req.lbsNeeded} pounds of ${labelFor(req.category).toLowerCase()}, status ${req.status}`
+          ? `${p.name}: needs ${req.lbsNeeded} pounds of ${labelFor(req.category).toLowerCase()}, ${
+              req.status === 'partial'
+                ? `${req.deliveredLbs} of ${req.lbsPlanned} pounds delivered so far`
+                : closed && !delivered
+                  ? `closed with ${req.deliveredLbs} of ${req.lbsPlanned} pounds delivered`
+                  : `status ${req.status}`
+            }`
           : `${p.name}: no open request`;
         return (
           <g
@@ -593,12 +624,30 @@ export default function SkyMap({
                   cx={pos.x}
                   cy={pos.y}
                   r={r}
-                  fill={isMap ? (delivered ? '#F2B90C' : '#2E1069') : delivered ? 'url(#planetDone)' : 'url(#planet)'}
+                  fill={isMap ? (delivered ? '#F2B90C' : pc.map) : delivered ? 'url(#planetDone)' : `url(#planet-${p.color || 'lavender'})`}
                   stroke={isMap ? '#2E1069' : undefined}
                   strokeWidth={isMap ? 2.5 : undefined}
                   filter={!isMap && delivered ? 'url(#glow)' : undefined}
                 />
-                {isMap && !delivered && (
+                {filling && (
+                  <>
+                    <clipPath id={`ship-clip-${p.id}`}>
+                      <circle cx={pos.x} cy={pos.y} r={r - (isMap ? 1.2 : 0)} />
+                    </clipPath>
+                    <g clipPath={`url(#ship-clip-${p.id})`}>
+                      <rect
+                        className="ship-fill"
+                        x={pos.x - r}
+                        y={pos.y - r}
+                        width={r * 2}
+                        height={r * 2}
+                        fill={isMap ? '#F2B90C' : 'url(#planetDone)'}
+                        style={{ transform: `scaleY(${booted ? shipFrac : 0})` }}
+                      />
+                    </g>
+                  </>
+                )}
+                {isMap && !closed && (
                   <path
                     className="pin-house"
                     transform={`translate(${pos.x} ${pos.y}) scale(${Math.max(1, r / 20)})`}
@@ -607,7 +656,7 @@ export default function SkyMap({
                     fillRule="evenodd"
                   />
                 )}
-                {delivered && (
+                {closed && (
                   <text x={pos.x} y={pos.y + 6} textAnchor="middle" className="planet-check">
                     ✓
                   </text>
@@ -621,9 +670,9 @@ export default function SkyMap({
                 cx={pos.x}
                 cy={pos.y}
                 r={r}
-                fill={isMap ? '#ffffff' : '#272F8B'}
+                fill={isMap ? '#ffffff' : planetColor(p.color).dark}
                 fillOpacity={isMap ? 0.9 : 0.35}
-                stroke={isMap ? '#2E1069' : '#9B75DB'}
+                stroke={isMap ? planetColor(p.color).map : planetColor(p.color).base}
                 strokeWidth={isMap ? 2.5 : undefined}
                 strokeOpacity="0.8"
                 strokeDasharray="4 4"

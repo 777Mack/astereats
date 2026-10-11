@@ -135,7 +135,8 @@ export function buildSeedRequests(seed, pantries, farms) {
     const matched = { ...applyMatch(base, ev), status: s.status, pledgeCount: s.pledgeCount || 0 };
     matched.pledged =
       s.status === 'matched' ? Math.round(matched.goal * (s.pledgedFraction ?? 0)) : matched.goal;
-    matched.deliveredLbs = s.status === 'delivered' ? s.deliveredLbs ?? matched.lbsPlanned : 0;
+    matched.deliveredLbs =
+      s.status === 'delivered' || s.status === 'partial' ? Math.min(matched.lbsPlanned, s.deliveredLbs ?? matched.lbsPlanned) : 0;
     return matched;
   });
 }

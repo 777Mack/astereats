@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { prefersReducedMotion } from '../lib/motion.js';
+import { PLANET_COLORS, STAR_COLORS, planetColor, starColor } from '../lib/colors.js';
 
 // "Join" tab: where a pantry or farm says it is interested. Demo only: nothing is sent or saved,
 // because there is no backend. When one exists, replace the body of `submit` with a call to a server function.
@@ -88,12 +89,15 @@ const SKY_DOTS = [
   [92, -92, 1.3], [118, 20, 0.8], [130, -40, 1.1], [-132, -10, 1], [84, 70, 0.7], [-20, -60, 0.6],
 ];
 
-function Emblem({ role, name, city, joined }) {
+function Emblem({ role, name, city, joined, planetKey, starKey }) {
   const d = useMorph(role);
   const isPantry = role === 'pantry';
   const isFarm = role === 'farm';
   const title = name.trim() || (role ? `Your ${ROLES[role].noun}` : 'Your spot');
   const sub = city.trim() || (role ? 'Your city' : 'waiting in the sky');
+  const pc = planetColor(planetKey);
+  const sc = starColor(starKey);
+  const accent = isFarm ? sc.fill : pc.base;
   return (
     <svg
       className={`join-emblem${role ? ` is-${role}` : ''}${joined ? ' is-joined' : ''}`}
@@ -103,13 +107,13 @@ function Emblem({ role, name, city, joined }) {
     >
       <defs>
         <radialGradient id="join-planet" cx="35%" cy="30%" r="80%">
-          <stop offset="0%" stopColor="#C9B3F5" />
-          <stop offset="55%" stopColor="#9B75DB" />
-          <stop offset="100%" stopColor="#272F8B" />
+          <stop offset="0%" stopColor={pc.light} />
+          <stop offset="55%" stopColor={pc.base} />
+          <stop offset="100%" stopColor={pc.dark} />
         </radialGradient>
         <radialGradient id="join-star" cx="40%" cy="35%" r="75%">
-          <stop offset="0%" stopColor="#FFE58A" />
-          <stop offset="100%" stopColor="#F2B90C" />
+          <stop offset="0%" stopColor={sc.light} />
+          <stop offset="100%" stopColor={sc.fill} />
         </radialGradient>
         <filter id="join-glow" x="-60%" y="-60%" width="220%" height="220%">
           <feGaussianBlur stdDeviation="9" />
@@ -121,7 +125,7 @@ function Emblem({ role, name, city, joined }) {
       ))}
 
       <g className="join-shape">
-        <path className="join-glow" d={d} filter="url(#join-glow)" />
+        <path className="join-glow" d={d} filter="url(#join-glow)" style={role ? { fill: accent } : undefined} />
         {/* back half of the planet's orbit ring sits behind the planet */}
         <ellipse className="join-orbit" cx="0" cy="0" rx="78" ry="20" transform="rotate(-16)" pathLength="1" />
         <path className="join-outline" d={d} />
@@ -143,13 +147,13 @@ function Emblem({ role, name, city, joined }) {
           className="join-twinkle"
           d="M0,-9 L2,-2 L9,0 L2,2 L0,9 L-2,2 L-9,0 L-2,-2 Z"
           transform={`translate(${x} ${y})`}
-          style={{ animationDelay: `${delay}s` }}
+          style={{ animationDelay: `${delay}s`, fill: sc.fill }}
         />
       ))}
 
       {joined && <circle className="join-shock" r="60" />}
 
-      <text className="join-name" x="0" y="96" textAnchor="middle">
+      <text className="join-name" x="0" y="96" textAnchor="middle" style={isFarm ? { fill: sc.fill } : undefined}>
         {title.length > 26 ? `${title.slice(0, 25)}…` : title}
       </text>
       <text className="join-city" x="0" y="118" textAnchor="middle">
@@ -179,6 +183,8 @@ export default function JoinView() {
   const [city, setCity] = useState('');
   const [note, setNote] = useState('');
   const [done, setDone] = useState(false);
+  const [planetKey, setPlanetKey] = useState('lavender');
+  const [starKey, setStarKey] = useState('gold');
 
   const valid = role && org.trim() && EMAIL.test(email.trim()) && city.trim();
 
@@ -210,7 +216,7 @@ export default function JoinView() {
 
       <div className="join-layout">
         <div className="join-stage">
-          <Emblem role={role} name={org} city={city} joined={done} />
+          <Emblem role={role} name={org} city={city} joined={done} planetKey={planetKey} starKey={starKey} />
           <p className="join-stage-note" aria-live="polite">
             {done
               ? 'Welcome aboard. Here is how you would look in the sky.'
@@ -226,7 +232,8 @@ export default function JoinView() {
               <h3>You’re in the queue, {org.trim()}!</h3>
               <p>
                 This is a demo, so nothing was sent or saved. In a real version we would review {org.trim()} and email{' '}
-                {email.trim()} before your {role === 'farm' ? 'star' : 'planet'} appears on the map.
+                {email.trim()} before your {(role === 'farm' ? STAR_COLORS[starKey] : PLANET_COLORS[planetKey]).label.toLowerCase()}{' '}
+                {role === 'farm' ? 'star' : 'planet'} appears on the map.
               </p>
               <button className="btn btn-ghost" onClick={again}>
                 Try another
@@ -258,6 +265,40 @@ export default function JoinView() {
                       </li>
                     ))}
                   </ul>
+
+                  <fieldset className="join-colors">
+                    <legend>Pick your {role === 'farm' ? 'star' : 'planet'} colour</legend>
+                    <div className="join-swatches">
+                      {Object.entries(role === 'farm' ? STAR_COLORS : PLANET_COLORS).map(([key, c]) => {
+                        const on = (role === 'farm' ? starKey : planetKey) === key;
+                        return (
+                          <label key={key} className={on ? 'join-swatch on' : 'join-swatch'} title={c.label}>
+                            <input
+                              type="radio"
+                              name="color"
+                              checked={on}
+                              aria-label={c.label}
+                              onChange={() => (role === 'farm' ? setStarKey(key) : setPlanetKey(key))}
+                            />
+                            {role === 'farm' ? (
+                              <svg viewBox="-12 -12 24 24" aria-hidden="true">
+                                <polygon
+                                  points="0,-11 3.2,-3.4 11,-3.4 4.7,1.5 7.1,9.9 0,5.3 -7.1,9.9 -4.7,1.5 -11,-3.4 -3.2,-3.4"
+                                  fill={c.fill}
+                                />
+                              </svg>
+                            ) : (
+                              <span style={{ background: `radial-gradient(circle at 35% 30%, ${c.light}, ${c.base} 55%, ${c.dark})` }} />
+                            )}
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <span className="join-color-name">
+                      {(role === 'farm' ? STAR_COLORS[starKey] : PLANET_COLORS[planetKey]).label}
+                      {role === 'farm' ? '' : ' · a planet turns gold once its delivery is complete'}
+                    </span>
+                  </fieldset>
 
                   <label className="field">
                     <span>{role === 'farm' ? 'Farm name' : 'Pantry name'}</span>

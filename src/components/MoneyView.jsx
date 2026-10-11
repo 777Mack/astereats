@@ -6,6 +6,7 @@ import { useRef } from 'react';
 const SECTIONS = [
   {
     title: 'What happens to your money',
+    icon: 'money',
     items: [
       {
         q: 'When does my pledge actually leave my account?',
@@ -82,6 +83,18 @@ const SECTIONS = [
   },
 ];
 
+// A "$?" badge in stardust gold, marking the questions about where money goes.
+function MoneyQIcon() {
+  return (
+    <svg className="money-q" viewBox="0 0 32 32" aria-hidden="true">
+      <circle cx="16" cy="16" r="14.5" />
+      <text x="16" y="21.5" textAnchor="middle">
+        $?
+      </text>
+    </svg>
+  );
+}
+
 export default function MoneyView({ onJoin }) {
   const listRef = useRef(null);
   const setAll = (open) => {
@@ -113,11 +126,17 @@ export default function MoneyView({ onJoin }) {
       <div ref={listRef} className="q-list">
         {SECTIONS.map((sec, si) => (
           <div key={sec.title} className="q-section">
-            <h3 className="q-section-title">{sec.title}</h3>
+            <h3 className="q-section-title">
+              {sec.icon === 'money' && <MoneyQIcon />}
+              {sec.title}
+            </h3>
             {sec.items.map((it, ii) => (
               <details key={it.q} className="q-item" open={si === 0 && ii < 2}>
                 <summary>
-                  <span>{it.q}</span>
+                  <span className="q-with-icon">
+                    {sec.icon === 'money' && <MoneyQIcon />}
+                    {it.q}
+                  </span>
                   <span className="q-chev" aria-hidden="true" />
                 </summary>
                 <div className="q-body">

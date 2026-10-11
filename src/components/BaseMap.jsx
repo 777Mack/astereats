@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { prefersReducedMotion } from '../lib/motion.js';
 import { CITIES, PARKS, ROADS } from '../data/basemap.js';
 
 // The street-map layer behind the pins, styled in the spirit of a familiar web map:
@@ -135,6 +136,17 @@ export default function BaseMap({ project, W, H, ms, obstacles }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project, W, H, ms, obstacles, shields, bigCities]);
 
+  // A few sparkles scattered over the land (same spots every time), twinkling like the sky view's stars.
+  const sparkles = useMemo(() => {
+    let a = 21;
+    const rnd = () => {
+      a = (a * 16807) % 2147483647;
+      return a / 2147483647;
+    };
+    return Array.from({ length: 18 }, (_, i) => ({ x: 30 + rnd() * (W - 60), y: 30 + rnd() * (H - 60), s: 0.6 + rnd() * 0.7, d: (i % 6) * 0.6, gold: i % 3 === 0 }));
+  }, [W, H]);
+  const moving = !prefersReducedMotion();
+
   // Drawing units per mile, so parks stay to scale.
   const ppm = useMemo(() => {
     const lat = 33.75;
@@ -178,6 +190,32 @@ export default function BaseMap({ project, W, H, ms, obstacles }) {
         ))}
       </g>
 
+      {/* Stardust travelling the interstates (skipped when reduced motion is on) */}
+      {moving &&
+        roads
+          .filter((r) => r.kind === 'interstate')
+          .map((r, i) => (
+            <circle key={`glint-${r.id}`} className="map-glint" r="3.4">
+              <animateMotion
+                dur={`${18 + i * 5}s`}
+                repeatCount="indefinite"
+                path={r.d}
+                begin={`${-i * 3}s`}
+                {...(r.closed ? {} : { keyPoints: '0;1;0', keyTimes: '0;0.5;1', calcMode: 'linear' })}
+              />
+            </circle>
+          ))}
+
+      {sparkles.map((p, i) => (
+        <path
+          key={`sparkle-${i}`}
+          className={p.gold ? 'map-sparkle is-gold' : 'map-sparkle'}
+          d="M0,-6 L1.3,-1.3 L6,0 L1.3,1.3 L0,6 L-1.3,1.3 L-6,0 L-1.3,-1.3 Z"
+          transform={`translate(${p.x.toFixed(1)} ${p.y.toFixed(1)}) scale(${p.s.toFixed(2)})`}
+          style={{ animationDelay: `${p.d}s` }}
+        />
+      ))}
+
       {shields.map((s) => (
         <g key={s.key}>
           <rect x={s.x - s.w / 2} y={s.y - s.h / 2} width={s.w} height={s.h} rx={6 * ms} fill={s.kind === 'interstate' ? C.sign : C.ink} stroke="#ffffff" strokeWidth="2" />
@@ -197,6 +235,14 @@ export default function BaseMap({ project, W, H, ms, obstacles }) {
         </g>
       ))}
 
+      {/* Dusk: a faint violet glow toward the edges ties the map to the night-sky theme */}
+      <defs>
+        <radialGradient id="map-dusk" gradientUnits="userSpaceOnUse" cx={W / 2} cy={H / 2} r={W * 0.75}>
+          <stop offset="55%" stopColor="#9B75DB" stopOpacity="0" />
+          <stop offset="100%" stopColor="#6B45B8" stopOpacity="0.28" />
+        </radialGradient>
+      </defs>
+      <rect x={-2500} y={-2500} width={W + 5000} height={H + 5000} fill="url(#map-dusk)" pointerEvents="none" />
     </g>
   );
 }

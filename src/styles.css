@@ -445,6 +445,11 @@ textarea {
   background: var(--gold);
   color: var(--night);
 }
+.pill-partial {
+  background: rgba(242, 185, 12, 0.18);
+  border-color: var(--gold);
+  color: var(--gold);
+}
 
 /* intro legend */
 .intro h2 {
@@ -2860,4 +2865,177 @@ tr:last-child td {
   .tour-on-map .map-sidebar {
     display: none;
   }
+}
+
+/* ---------- Partial deliveries: shipment meter and the planet's rising gold fill ---------- */
+.ship-meter {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+.ship-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+.ship-title {
+  font-weight: 650;
+}
+.ship-amount {
+  font-weight: 700;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+.ship-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(27, 9, 72, 0.8);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.ship-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: repeating-linear-gradient(-45deg, #f2b90c 0 8px, #ffd24d 8px 16px);
+  transition: width 0.8s ease;
+}
+.ship-bar.is-full span {
+  background: var(--gold);
+}
+.ship-fill {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------- Money tab: "$?" badges ---------- */
+.money-q {
+  flex: none;
+  width: 26px;
+  height: 26px;
+}
+.money-q circle {
+  fill: rgba(242, 185, 12, 0.14);
+  stroke: var(--gold);
+  stroke-width: 2;
+}
+.money-q text {
+  fill: var(--gold);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+.q-section-title .money-q {
+  width: 22px;
+  height: 22px;
+  vertical-align: -6px;
+  margin-right: 8px;
+}
+.q-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ---------- Map view: a little night-sky life ---------- */
+.map-glint {
+  fill: #fff;
+  stroke: #f2b90c;
+  stroke-width: 2;
+  filter: drop-shadow(0 0 3px rgba(242, 185, 12, 0.9));
+  pointer-events: none;
+}
+.map-sparkle {
+  fill: #9b75db;
+  opacity: 0.55;
+  pointer-events: none;
+  animation: map-twinkle 3.4s ease-in-out infinite;
+}
+.map-sparkle.is-gold {
+  fill: #e0a22b;
+}
+@keyframes map-twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+.map-star-glow {
+  opacity: 0.28;
+  pointer-events: none;
+  animation: map-star-glow 2.8s ease-in-out infinite;
+}
+@keyframes map-star-glow {
+  0%,
+  100% {
+    opacity: 0.18;
+  }
+  50% {
+    opacity: 0.42;
+  }
+}
+
+/* ---------- Join: colour swatches ---------- */
+.join-colors {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  gap: 8px;
+}
+.join-colors legend {
+  margin-bottom: 6px;
+  font-size: 0.88rem;
+  color: var(--ink-dim);
+}
+.join-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.join-swatch {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.join-swatch input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.join-swatch:hover {
+  transform: scale(1.08);
+}
+.join-swatch.on {
+  border-color: var(--ink);
+  transform: scale(1.12);
+}
+.join-swatch:focus-within {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+.join-swatch span {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  box-shadow: inset 0 -3px 6px rgba(0, 0, 0, 0.25);
+}
+.join-swatch svg {
+  width: 30px;
+  height: 30px;
+}
+.join-color-name {
+  font-size: 0.82rem;
+  color: var(--ink-dim);
 }

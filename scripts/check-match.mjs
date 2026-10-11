@@ -48,10 +48,13 @@ ok(evC.produceCost === 0, 'Farm C donates surplus, so produce cost is $0');
 
 // --- Every seed is internally consistent ---
 for (const r of seeds) {
-  if (r.status === 'funded' || r.status === 'delivered') {
+  if (r.status === 'funded' || r.status === 'partial' || r.status === 'delivered') {
     ok(r.pledged === r.goal && r.goal > 0, `${r.id} (${r.status}) is fully funded at $${r.goal}`);
   }
   if (r.status === 'open') ok(r.farmId === null, `${r.id} is open with no farm chosen`);
+  if (r.status === 'partial') {
+    ok(r.deliveredLbs > 0 && r.deliveredLbs < r.lbsPlanned, `${r.id} is partly delivered (${r.deliveredLbs} of ${r.lbsPlanned} lbs)`);
+  }
 }
 const r2 = seeds.find((r) => r.id === 'r2');
 const rank2 = rankFarms(r2, pantry.p2, data.farms);

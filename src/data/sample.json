@@ -1,15 +1,15 @@
 {
   "_note": "ALL SAMPLE DATA. Names are invented, locations are approximate neighborhoods, and nothing here represents a real pantry, farm, partnership, or payment.",
   "pantries": [
-    { "id": "p1", "name": "Sample Pantry · Adamsville", "area": "Adamsville", "lat": 33.74, "lng": -84.5 },
-    { "id": "p2", "name": "Sample Pantry · Decatur", "area": "Decatur", "lat": 33.7748, "lng": -84.2963 },
-    { "id": "p3", "name": "Sample Pantry · Jonesboro", "area": "Jonesboro", "lat": 33.5215, "lng": -84.3538 },
-    { "id": "p4", "name": "Sample Pantry · Stone Mountain", "area": "Stone Mountain", "lat": 33.8082, "lng": -84.1702 },
-    { "id": "p5", "name": "Sample Pantry · Marietta", "area": "Marietta", "lat": 33.9526, "lng": -84.5499 }
+    { "id": "p1", "name": "Sample Pantry · Adamsville", "area": "Adamsville", "lat": 33.74, "lng": -84.5, "color": "lavender" },
+    { "id": "p2", "name": "Sample Pantry · Decatur", "area": "Decatur", "lat": 33.7748, "lng": -84.2963, "color": "sky" },
+    { "id": "p3", "name": "Sample Pantry · Jonesboro", "area": "Jonesboro", "lat": 33.5215, "lng": -84.3538, "color": "rose" },
+    { "id": "p4", "name": "Sample Pantry · Stone Mountain", "area": "Stone Mountain", "lat": 33.8082, "lng": -84.1702, "color": "teal" },
+    { "id": "p5", "name": "Sample Pantry · Marietta", "area": "Marietta", "lat": 33.9526, "lng": -84.5499, "color": "coral" }
   ],
   "farms": [
     {
-      "id": "fA", "name": "Sample Farm A", "area": "West Fulton", "lat": 33.74, "lng": -84.6042,
+      "id": "fA", "name": "Sample Farm A", "area": "West Fulton", "color": "gold", "lat": 33.74, "lng": -84.6042,
       "prepHours": 1.5, "mode": "sell",
       "produce": [
         { "category": "greens", "lbs": 120, "pricePerLb": 0.75 },
@@ -17,7 +17,7 @@
       ]
     },
     {
-      "id": "fB", "name": "Sample Farm B", "area": "Palmetto", "lat": 33.522, "lng": -84.668,
+      "id": "fB", "name": "Sample Farm B", "area": "Palmetto", "color": "ember", "lat": 33.522, "lng": -84.668,
       "prepHours": 3, "mode": "sell",
       "produce": [
         { "category": "greens", "lbs": 300, "pricePerLb": 0.9 },
@@ -25,7 +25,7 @@
       ]
     },
     {
-      "id": "fC", "name": "Sample Farm C", "area": "Fayetteville", "lat": 33.4487, "lng": -84.4549,
+      "id": "fC", "name": "Sample Farm C", "area": "Fayetteville", "color": "mint", "lat": 33.4487, "lng": -84.4549,
       "prepHours": 2, "mode": "donate",
       "produce": [
         { "category": "greens", "lbs": 60, "pricePerLb": 0.7 },
@@ -33,7 +33,7 @@
       ]
     },
     {
-      "id": "fD", "name": "Sample Farm D", "area": "Conyers", "lat": 33.6676, "lng": -84.0177,
+      "id": "fD", "name": "Sample Farm D", "area": "Conyers", "color": "gold", "lat": 33.6676, "lng": -84.0177,
       "prepHours": 4, "mode": "sell",
       "produce": [
         { "category": "roots", "lbs": 400, "pricePerLb": 0.45 },
@@ -41,7 +41,7 @@
       ]
     },
     {
-      "id": "fE", "name": "Sample Farm E", "area": "Roswell", "lat": 34.0232, "lng": -84.3616,
+      "id": "fE", "name": "Sample Farm E", "area": "Roswell", "color": "ice", "lat": 34.0232, "lng": -84.3616,
       "prepHours": 2, "mode": "sell",
       "produce": [
         { "category": "tomatoes", "lbs": 150, "pricePerLb": 1.1 },
@@ -49,14 +49,14 @@
       ]
     },
     {
-      "id": "fF", "name": "Sample Farm F", "area": "Douglasville", "lat": 33.7515, "lng": -84.7477,
+      "id": "fF", "name": "Sample Farm F", "area": "Douglasville", "color": "rose", "lat": 33.7515, "lng": -84.7477,
       "prepHours": 30, "mode": "sell",
       "produce": [
         { "category": "greens", "lbs": 150, "pricePerLb": 0.65 }
       ]
     },
     {
-      "id": "fG", "name": "Sample Farm G", "area": "Powder Springs", "lat": 33.8595, "lng": -84.6841,
+      "id": "fG", "name": "Sample Farm G", "area": "Powder Springs", "color": "pearl", "lat": 33.8595, "lng": -84.6841,
       "prepHours": 3, "mode": "donate",
       "produce": [
         { "category": "squash", "lbs": 200, "pricePerLb": 0.55 },
@@ -64,7 +64,7 @@
       ]
     },
     {
-      "id": "fH", "name": "Sample Farm H", "area": "Lawrenceville", "lat": 33.9562, "lng": -83.988,
+      "id": "fH", "name": "Sample Farm H", "area": "Lawrenceville", "color": "gold", "lat": 33.9562, "lng": -83.988,
       "prepHours": 2, "mode": "sell",
       "produce": [
         { "category": "fruit", "lbs": 120, "pricePerLb": 1.1 },
@@ -75,7 +75,7 @@
   "seedRequests": [
     { "id": "r1", "pantryId": "p1", "category": "greens", "lbsNeeded": 100, "deadlineHours": 24, "status": "matched", "farmId": "fA", "pledgedFraction": 0.65, "pledgeCount": 9 },
     { "id": "r2", "pantryId": "p2", "category": "roots", "lbsNeeded": 150, "deadlineHours": 48, "status": "open" },
-    { "id": "r3", "pantryId": "p3", "category": "tomatoes", "lbsNeeded": 60, "deadlineHours": 36, "status": "funded", "farmId": "fB", "pledgeCount": 14 },
+    { "id": "r3", "pantryId": "p3", "category": "tomatoes", "lbsNeeded": 60, "deadlineHours": 36, "status": "partial", "farmId": "fB", "deliveredLbs": 30, "pledgeCount": 14 },
     { "id": "r4", "pantryId": "p4", "category": "squash", "lbsNeeded": 80, "deadlineHours": 72, "status": "delivered", "farmId": "fD", "deliveredLbs": 80, "pledgeCount": 17 }
   ]
 }

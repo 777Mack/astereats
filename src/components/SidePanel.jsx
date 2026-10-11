@@ -7,6 +7,7 @@ const STATUS_LABEL = {
   open: 'Needs a match',
   matched: 'Funding open',
   funded: 'Awaiting delivery',
+  partial: 'Partly delivered',
   delivered: 'Delivered',
 };
 
@@ -209,41 +210,78 @@ function FundingCard({ request, onPledge }) {
   );
 }
 
-function DeliveryCard({ request, farm, onConfirm }) {
-  const [lbs, setLbs] = useState(request.lbsPlanned);
-  const valid = Number.isFinite(lbs) && lbs > 0 && lbs <= request.lbsPlanned;
+// Second meter: pounds the pantry has confirmed, out of what the farm planned to send.
+export function ShipmentMeter({ delivered, planned }) {
+  const frac = planned > 0 ? Math.min(1, delivered / planned) : 0;
+  return (
+    <div className="ship-meter">
+      <div className="ship-head">
+        <span className="ship-title">Shipment confirmed</span>
+        <span className="ship-amount">
+          {delivered} <span className="muted">of {planned} lbs</span>
+        </span>
+      </div>
+      <div
+        className={frac >= 1 ? 'ship-bar is-full' : 'ship-bar'}
+        role="progressbar"
+        aria-label="Pounds confirmed by the pantry"
+        aria-valuemin={0}
+        aria-valuemax={planned}
+        aria-valuenow={delivered}
+      >
+        <span style={{ width: `${frac * 100}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function DeliveryCard({ request, farm, onConfirm, onCloseOut }) {
+  const left = request.lbsPlanned - request.deliveredLbs;
+  const [lbs, setLbs] = useState(left);
+  const valid = Number.isFinite(lbs) && lbs > 0 && lbs <= left;
+  const partial = request.deliveredLbs > 0;
   return (
     <div className="card">
       <StardustMeter pledged={request.pledged} goal={request.goal} />
+      <ShipmentMeter delivered={request.deliveredLbs} planned={request.lbsPlanned} />
       <div className="delivery">
-        <h3>Funded. {farm.name} is on the way.</h3>
+        <h3>{partial ? `${left} lbs still on the way from ${farm.name}.` : `Funded. ${farm.name} is on the way.`}</h3>
         <p className="muted">
-          Delivery only counts once the pantry confirms what actually arrived, so the dashboard reports verified
-          quantities.
+          {partial
+            ? 'The planet fills with gold as pounds are confirmed, and turns fully gold once the whole shipment arrives.'
+            : 'Delivery only counts once the pantry confirms what actually arrived. Shipments can come in parts.'}
         </p>
         <label className="field">
-          <span>Pounds received (pantry confirms)</span>
+          <span>Pounds received in this shipment (pantry confirms)</span>
           <input
             type="number"
             min="1"
-            max={request.lbsPlanned}
+            max={left}
             value={Number.isFinite(lbs) ? lbs : ''}
             onChange={(e) => setLbs(e.target.value === '' ? NaN : Number(e.target.value))}
           />
         </label>
         <button className="btn btn-primary" disabled={!valid} onClick={() => onConfirm(lbs)}>
-          Confirm delivery received
+          {valid && lbs === left ? 'Confirm: shipment complete' : 'Confirm this shipment'}
         </button>
-        <p className="note">Simulated pantry confirmation for the demo.</p>
+        {partial && (
+          <button className="btn btn-ghost" onClick={onCloseOut}>
+            Farm can’t send more: close at {request.deliveredLbs} lbs
+          </button>
+        )}
+        <p className="note">
+          Simulated pantry confirmation for the demo.{partial ? ' Closing early would return the unspent share to donors.' : ''}
+        </p>
       </div>
     </div>
   );
 }
 
 function DeliveredCard({ request, farm }) {
+  const short = request.deliveredLbs < request.lbsPlanned;
   return (
     <div className="card card-done">
-      <p className="eyebrow">Verified by the pantry</p>
+      <p className="eyebrow">{short ? `Closed short: ${request.deliveredLbs} of ${request.lbsPlanned} lbs` : 'Verified by the pantry'}</p>
       <h3>
         {request.deliveredLbs} lbs of {labelFor(request.category).toLowerCase()} delivered
       </h3>
@@ -252,6 +290,7 @@ function DeliveredCard({ request, farm }) {
         {money(request.goal)} total).
       </p>
       <StardustMeter pledged={request.pledged} goal={request.goal} />
+      <ShipmentMeter delivered={request.deliveredLbs} planned={request.lbsPlanned} />
     </div>
   );
 }
@@ -264,6 +303,7 @@ export default function SidePanel({
   onChoose,
   onPledge,
   onConfirm,
+  onCloseOut,
   onHoverFarm,
   onNewRequest,
 }) {
@@ -341,10 +381,16 @@ export default function SidePanel({
         </>
       )}
 
-      {request.status === 'funded' && farm && (
+      {(request.status === 'funded' || request.status === 'partial') && farm && (
         <>
           <FarmSummary farm={farm} request={request} />
-          <DeliveryCard key={request.id} request={request} farm={farm} onConfirm={onConfirm} />
+          <DeliveryCard
+            key={`${request.id}-${request.deliveredLbs}`}
+            request={request}
+            farm={farm}
+            onConfirm={onConfirm}
+            onCloseOut={onCloseOut}
+          />
         </>
       )}
 
